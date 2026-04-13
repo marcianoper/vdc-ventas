@@ -358,6 +358,19 @@
       text-align:right;
     }
 
+    .cellReadonly{
+      width:110px;
+      padding:8px 10px;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:12px;
+      font-weight:900;
+      background:#f8fafc;
+      box-shadow:none;
+      margin:0;
+      text-align:right;
+      color:#0f172a;
+    }
+
     .muted{
       color:var(--muted);
       font-weight:800;
@@ -401,6 +414,7 @@
         <a class="btnLink" href="https://marcianoper.github.io/vdc-central/">← VDC Central</a>
         <span id="rtNotas" class="pill">Notas RT: —</span>
         <span id="rtMostrador" class="pill">Mostrador RT: —</span>
+        <span id="rtCostos" class="pill">Costos auto: —</span>
       </div>
     </div>
   </div>
@@ -414,9 +428,9 @@
         <h2>Filtro del día</h2>
         <p>
           Esta página toma:
-          <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día y
+          <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
           <b>cobrado</b> desde el <b>mostrador neto</b> del día
-          (enviados menos devueltos).
+          y <b>precio de compra</b> desde el <b>costo promedio por kg</b> de la página de Costos.
         </p>
       </div>
     </div>
@@ -445,7 +459,9 @@
     </div>
 
     <div class="note">
-      Los <b>precios de venta</b> y <b>precios de compra</b> se guardan por fecha en el navegador para que puedas ajustar el día sin mover tablas en Supabase.
+      Los <b>precios de venta</b> se guardan por fecha en el navegador.
+      Los <b>precios de compra</b> se autollenan desde <b>Costos</b> según la fecha seleccionada,
+      excepto <b>Sebo</b>, <b>Bofe</b> y <b>Higado</b>.
     </div>
   </section>
 
@@ -485,7 +501,7 @@
       <div class="stat">
         <div class="k">Utilidad estimada</div>
         <div class="v" id="statUtilidad">$0.00</div>
-        <div class="s">Con base en precio de venta y precio de compra editables.</div>
+        <div class="s">Con base en precio de venta y precio de compra del día.</div>
       </div>
     </div>
   </section>
@@ -573,7 +589,7 @@
 
     <div class="note">
       <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.
-      Para las <b>notas a crédito</b>, el sistema también respeta el importe real capturado en la nota.
+      Para las <b>notas a crédito</b>, el sistema respeta el importe real capturado en la nota.
     </div>
   </section>
 
@@ -594,6 +610,11 @@
 
   const sbNotas = window.supabase.createClient(NOTAS_URL, NOTAS_KEY);
   const sbMostrador = window.supabase.createClient(MOSTRADOR_URL, MOSTRADOR_KEY);
+
+  // =========================
+  // STORAGE COSTOS
+  // =========================
+  const COSTOS_STORAGE_KEY = "vdc_costos_html_v6_materia_prima_auto";
 
   // =========================
   // CONFIG PRODUCTOS
@@ -636,7 +657,7 @@
     "Bofe Completo": ["bofe completo"],
     "Cabeza": ["cabeza", "cabeza de res"],
     "Cabeza Congelada": ["cabeza congelada"],
-    "Cabeza De Rastro": ["cabeza de rastro", "cabeza de rastro"],
+    "Cabeza De Rastro": ["cabeza de rastro"],
     "Cabeza Sin Lengua": ["cabeza sin lengua"],
     "Caja Libro Visceras": ["caja libro visceras", "caja libro vísceras", "caja libro visceras del centro"],
     "Caja Menudo Canadian": ["caja menudo canadian"],
@@ -659,10 +680,24 @@
     "PT": ["pt"],
     "Teleco": ["teleco"],
     "Tripa": ["tripa"],
-    "Tripa de Rastro": ["tripa de rastro", "tripa de rastro", "tripa rastro"],
+    "Tripa de Rastro": ["tripa de rastro", "tripa rastro"],
     "Tripa Gorda": ["tripa gorda"],
     "sebo 2": ["sebo 2"]
   };
+
+  const COSTOS_TO_VENTAS = {
+    "Corazon": "Corazon",
+    "Tripa": "Tripa",
+    "Cabeza": "Cabeza",
+    "Cuajo": "Cuajo",
+    "Libro": "Libro",
+    "Menudo": "Menudo Sucio",
+    "Pata Sucia": "Pata Sucia",
+    "Teleco": "Teleco",
+    "Lengua": "Lengua"
+  };
+
+  const PRODUCTOS_SIN_AUTO_COMPRA = new Set(["Bofe", "Sebo", "Higado", "sebo 2"]);
 
   // =========================
   // ESTADO
@@ -678,6 +713,7 @@
   let mostradorDevueltos = [];
 
   let preciosDia = {};
+  let costosAutoDia = {};
   let tablaMasterRows = [];
   let tablaPorCobrarRows = [];
   let tablaCobradoRows = [];
@@ -796,6 +832,70 @@
   }
 
   // =========================
+  // COSTOS AUTO
+  // =========================
+  function cargarCostosAutoDelDia(){
+    costosAutoDia = {};
+
+    let raw = null;
+    try{
+      raw = JSON.parse(localStorage.getItem(COSTOS_STORAGE_KEY) || "null");
+    }catch{
+      raw = null;
+    }
+
+    if(!raw){
+      setRtPill("rtCostos", "Costos auto: sin datos", "warn");
+      return;
+    }
+
+    const kgRows = Array.isArray(raw.kgProduccion) ? raw.kgProduccion : [];
+    const matriz = Array.isArray(raw.matriz) ? raw.matriz : [];
+
+    const kgMap = {};
+    for(const row of kgRows){
+      kgMap[row.producto] = num(row.kgDia || 0);
+    }
+
+    const costosPorProducto = {};
+    for(const p of Object.keys(COSTOS_TO_VENTAS)){
+      costosPorProducto[p] = 0;
+    }
+
+    matriz.forEach(row=>{
+      const costo = num(row.costo || 0);
+      const activos = Object.keys(COSTOS_TO_VENTAS).filter(p => row.marks && row.marks[p]);
+      const divisor = activos.length;
+      if(costo > 0 && divisor > 0){
+        const share = costo / divisor;
+        activos.forEach(p=>{
+          costosPorProducto[p] = num(costosPorProducto[p]) + share;
+        });
+      }
+    });
+
+    Object.entries(COSTOS_TO_VENTAS).forEach(([productoCostos, productoVentas])=>{
+      const kg = num(kgMap[productoCostos] || 0);
+      const costoTotal = num(costosPorProducto[productoCostos] || 0);
+      const costoKg = kg > 0 ? (costoTotal / kg) : 0;
+      costosAutoDia[productoVentas] = costoKg;
+    });
+
+    setRtPill("rtCostos", "Costos auto: cargados", "ok");
+  }
+
+  function getPrecioCompraFinal(producto){
+    if(PRODUCTOS_SIN_AUTO_COMPRA.has(producto)){
+      return getPrecioCompraGuardado(producto);
+    }
+
+    const auto = num(costosAutoDia[producto] || 0);
+    if(auto > 0) return auto;
+
+    return getPrecioCompraGuardado(producto);
+  }
+
+  // =========================
   // CARGA DE DATOS
   // =========================
   async function cargarNotas(){
@@ -899,7 +999,6 @@
         else setRtPill("rtNotas", "Notas RT: " + status, "warn");
       });
 
-    // Sin join filter sencillo, así que refresca todo detalle cuando cambie cualquier detalle
     notasDetalleChannel = sbNotas
       .channel(`tv-notas-detalle-${fecha}`)
       .on(
@@ -1059,7 +1158,6 @@
 
       const precioNotas = num(rNotas.precioPromedio);
       const precioVentaGuardado = getPrecioVentaGuardado(producto);
-      const precioCompraGuardado = getPrecioCompraGuardado(producto);
 
       let precioVenta = 0;
       if(modo === "preferir_notas"){
@@ -1068,17 +1166,13 @@
         precioVenta = precioVentaGuardado > 0 ? precioVentaGuardado : precioNotas;
       }
 
-      const precioCompra = precioCompraGuardado;
+      const precioCompra = getPrecioCompraFinal(producto);
       const cobradoKg = num(rMost.cobradoKg);
       const porCobrarKg = num(rNotas.kilos);
       const netoKg = cobradoKg + porCobrarKg;
 
-      // Cobrado: lo valuamos con precioVenta editable
       const ingresoCobrado = cobradoKg * precioVenta;
-
-      // Por cobrar: respetamos lo que ya capturaste en notas
       const ingresoPorCobrar = num(rNotas.importe);
-
       const ventaTotal = ingresoCobrado + ingresoPorCobrar;
       const utilidadEstimada = (precioVenta - precioCompra) * netoKg;
 
@@ -1086,6 +1180,7 @@
         producto,
         precioVenta,
         precioCompra,
+        compraAuto: !PRODUCTOS_SIN_AUTO_COMPRA.has(producto) && num(costosAutoDia[producto] || 0) > 0,
         cobradoKg,
         porCobrarKg,
         netoKg,
@@ -1163,6 +1258,16 @@
 
     tbody.innerHTML = rows.map(r=>{
       const utilidadClass = r.utilidadEstimada >= 0 ? "good" : "bad";
+      const compraCell = r.compraAuto
+        ? `<input class="cellReadonly" type="text" value="${Number(r.precioCompra || 0).toFixed(2)}" readonly />`
+        : `<input
+            class="cellNum"
+            type="number"
+            step="0.01"
+            value="${Number(r.precioCompra || 0).toFixed(2)}"
+            onchange="setPrecioGlobal('${escapeHtml(r.producto)}','compra', this.value)"
+          />`;
+
       return `
         <tr>
           <td>${escapeHtml(r.producto)}</td>
@@ -1175,15 +1280,7 @@
               onchange="setPrecioGlobal('${escapeHtml(r.producto)}','venta', this.value)"
             />
           </td>
-          <td>
-            <input
-              class="cellNum"
-              type="number"
-              step="0.01"
-              value="${Number(r.precioCompra || 0).toFixed(2)}"
-              onchange="setPrecioGlobal('${escapeHtml(r.producto)}','compra', this.value)"
-            />
-          </td>
+          <td>${compraCell}</td>
           <td>${fmtKg(r.cobradoKg)}</td>
           <td>${fmtKg(r.porCobrarKg)}</td>
           <td>${fmtKg(r.netoKg)}</td>
@@ -1218,6 +1315,7 @@
   }
 
   function procesarTodo(){
+    cargarCostosAutoDelDia();
     procesarTablaMaster();
     renderTablaPorCobrar();
     renderTablaCobrado();
@@ -1307,8 +1405,17 @@
   });
 
   window.setPrecioGlobal = function(producto, campo, valor){
+    if(campo === "compra" && !PRODUCTOS_SIN_AUTO_COMPRA.has(producto) && num(costosAutoDia[producto] || 0) > 0){
+      return;
+    }
     setPrecio(producto, campo, valor);
   };
+
+  window.addEventListener("storage", (e)=>{
+    if(e.key === COSTOS_STORAGE_KEY){
+      procesarTodo();
+    }
+  });
 
   // =========================
   // INIT
