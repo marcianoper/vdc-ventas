@@ -462,6 +462,7 @@
       Los <b>precios de venta</b> salen de tus precios base y puedes ajustarlos por día en el navegador.
       Los <b>precios de compra</b> se autollenan desde <b>Costos</b> con el <b>costo promedio por kg</b> del día,
       excepto <b>Bofe</b>, <b>Sebo</b>, <b>Higado</b> y cualquier producto que sea <b>caja</b>.
+      Además, <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
       En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
       de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
@@ -686,6 +687,11 @@
     "Tripa": 45.00,
     "Tripa de Rastro": 54.00,
     "Tripa Gorda": 41.00
+  };
+
+  const PRECIOS_COMPRA_FIJOS = {
+    "Tripa de Rastro": 45,
+    "Cabeza De Rastro": 46
   };
 
   const KG_POR_CAJA_COMPLETA = 27.22;
@@ -939,6 +945,10 @@
   }
 
   function getPrecioCompraFinal(producto){
+    if(PRECIOS_COMPRA_FIJOS[producto] != null){
+      return num(PRECIOS_COMPRA_FIJOS[producto]);
+    }
+
     if(!puedeUsarCostoPromedioGlobal(producto)){
       return getPrecioCompraGuardado(producto);
     }
@@ -1253,7 +1263,7 @@
         producto,
         precioVenta,
         precioCompra,
-        compraAuto: puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0,
+        compraAuto: (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0),
         cobradoKg,
         porCobrarKg,
         porCobrarPzas,
@@ -1479,8 +1489,13 @@
   });
 
   window.setPrecioGlobal = function(producto, campo, valor){
-    if(campo === "compra" && puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0){
-      return;
+    if(campo === "compra"){
+      if(PRECIOS_COMPRA_FIJOS[producto] != null){
+        return;
+      }
+      if(puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0){
+        return;
+      }
     }
     setPrecio(producto, campo, valor);
   };
