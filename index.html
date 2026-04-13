@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Total de Ventas — VDC 360°</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --brand:#0a7a3b;
+      --brand2:#0f9a52;
+      --bg:#f6f7f8;
+      --card:#ffffff;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --shadow:0 18px 50px rgba(2,6,23,.10);
+      --shadow2:0 10px 24px rgba(2,6,23,.10);
+      --danger:#b91c1c;
+      --dark:#111827;
+      --warn:#b45309;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 520px at 18% -10%, rgba(15,154,82,.16), transparent 55%),
+        radial-gradient(900px 420px at 98% 10%, rgba(10,122,59,.14), transparent 55%),
+        var(--bg);
+    }
+
+    .wrap{ max-width:1440px; margin:0 auto; padding:0 16px; }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      backdrop-filter:saturate(140%) blur(10px);
+      background:rgba(246,247,248,.80);
+      border-bottom:1px solid rgba(229,231,235,.75);
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      color:#fff;
+      font-weight:1000;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));
+      box-shadow:0 10px 20px rgba(10,122,59,.20);
+    }
+
+    .title b{
+      display:block;
+      font-size:15px;
+      line-height:1.1;
+    }
+
+    .title span{
+      display:block;
+      margin-top:5px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .barRight{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(229,231,235,.95);
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+      font-size:12px;
+      font-weight:1000;
+      color:#111827;
+    }
+
+    .pill.ok{
+      color:var(--brand);
+      background:rgba(10,122,59,.10);
+      border-color:rgba(10,122,59,.18);
+    }
+
+    .pill.bad{
+      color:var(--danger);
+      background:#fff1f2;
+      border-color:#fecdd3;
+    }
+
+    .pill.warn{
+      color:var(--warn);
+      background:#fff7ed;
+      border-color:#fed7aa;
+    }
+
+    .btnLink{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:14px;
+      text-decoration:none;
+      font-weight:1000;
+      color:#111827;
+      background:#fff;
+      border:1px solid rgba(229,231,235,.95);
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+    }
+
+    main{ padding:16px 0 28px; }
+
+    .card{
+      background:var(--card);
+      border-radius:22px;
+      box-shadow:var(--shadow2);
+      border:1px solid rgba(2,6,23,.06);
+      padding:14px;
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .cardHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .cardHead h2{
+      margin:0;
+      font-size:14px;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+
+    .cardHead p{
+      margin:7px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      line-height:1.35;
+      max-width:80ch;
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap:12px;
+      align-items:end;
+    }
+
+    @media (max-width:1000px){
+      .filters{ grid-template-columns:1fr 1fr; }
+    }
+
+    @media (max-width:620px){
+      .filters{ grid-template-columns:1fr; }
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:1000;
+      color:#111827;
+    }
+
+    input, select, textarea{
+      width:100%;
+      padding:11px 12px;
+      margin-top:6px;
+      border-radius:14px;
+      border:1px solid rgba(229,231,235,.95);
+      background:rgba(255,255,255,.92);
+      outline:none;
+      color:var(--ink);
+      font-weight:800;
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(10,122,59,.35);
+      box-shadow:0 0 0 4px rgba(10,122,59,.10), 0 8px 18px rgba(2,6,23,.06);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 14px;
+      border:none;
+      border-radius:16px;
+      cursor:pointer;
+      font-weight:1000;
+      color:#fff;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));
+      box-shadow:0 10px 20px rgba(10,122,59,.20);
+      transition:filter .16s ease, transform .16s ease;
+    }
+
+    .btn:hover{
+      filter:brightness(1.05);
+      transform:translateY(-1px);
+    }
+
+    .btn.dark{
+      background:#111827;
+      box-shadow:0 10px 20px rgba(17,24,39,.18);
+    }
+
+    .btn.gray{
+      background:#475569;
+      box-shadow:0 10px 20px rgba(71,85,105,.18);
+    }
+
+    .btnRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      gap:12px;
+    }
+
+    @media (max-width:1100px){
+      .stats{ grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+    }
+
+    @media (max-width:620px){
+      .stats{ grid-template-columns:1fr; }
+    }
+
+    .stat{
+      background:#fff;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+    }
+
+    .stat .k{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+
+    .stat .v{
+      margin-top:8px;
+      font-size:24px;
+      font-weight:1000;
+      letter-spacing:-.5px;
+    }
+
+    .stat .s{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    @media (max-width:980px){
+      .grid2{ grid-template-columns:1fr; }
+    }
+
+    .tableWrap{
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(229,231,235,.95);
+      box-shadow:0 10px 24px rgba(2,6,23,.06);
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1000px;
+    }
+
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(229,231,235,.9);
+      text-align:center;
+      font-size:12.5px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:#111827;
+      color:#fff;
+      z-index:2;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+
+    td:first-child, th:first-child{
+      text-align:left;
+      padding-left:12px;
+    }
+
+    tr:hover td{ background:#f9fafb; }
+
+    .cellNum{
+      width:110px;
+      padding:8px 10px;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:12px;
+      font-weight:900;
+      background:#fff;
+      box-shadow:none;
+      margin:0;
+      text-align:right;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .note{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      line-height:1.4;
+      margin-top:10px;
+    }
+
+    .good{ color:var(--brand); }
+    .bad{ color:var(--danger); }
+    .warnTxt{ color:var(--warn); }
+
+    footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+      padding:10px 0 24px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">VDC</div>
+        <div class="title">
+          <b>Total de Ventas — VDC 360°</b>
+          <span>Cobrado + Cuentas por cobrar + Ganancia estimada del día</span>
+        </div>
+      </div>
+
+      <div class="barRight">
+        <a class="btnLink" href="https://marcianoper.github.io/vdc-central/">← VDC Central</a>
+        <span id="rtNotas" class="pill">Notas RT: —</span>
+        <span id="rtMostrador" class="pill">Mostrador RT: —</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Filtro del día</h2>
+        <p>
+          Esta página toma:
+          <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día y
+          <b>cobrado</b> desde el <b>mostrador neto</b> del día
+          (enviados menos devueltos).
+        </p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <label>Fecha
+        <input type="date" id="fecha" />
+      </label>
+
+      <label>Modo de precio de venta
+        <select id="modoPrecioVenta">
+          <option value="preferir_guardado" selected>Preferir precio guardado</option>
+          <option value="preferir_notas">Preferir promedio de notas cerradas</option>
+        </select>
+      </label>
+
+      <label>Buscar producto
+        <input type="text" id="buscarProducto" placeholder="Ej. Tripa / Cabeza / Libro" />
+      </label>
+
+      <div class="btnRow">
+        <button class="btn" id="btnRecargar">Actualizar</button>
+        <button class="btn dark" id="btnCSV">Exportar CSV</button>
+        <button class="btn gray" id="btnLimpiarPrecios">Limpiar precios del día</button>
+      </div>
+    </div>
+
+    <div class="note">
+      Los <b>precios de venta</b> y <b>precios de compra</b> se guardan por fecha en el navegador para que puedas ajustar el día sin mover tablas en Supabase.
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Resumen del día</h2>
+        <p>Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">Cobrado</div>
+        <div class="v" id="statCobrado">$0.00</div>
+        <div class="s">Mostrador neto del día valuado con precio de venta.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Cuentas por cobrar</div>
+        <div class="v" id="statPorCobrar">$0.00</div>
+        <div class="s">Notas a crédito cerradas del día.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Venta total</div>
+        <div class="v" id="statVentaTotal">$0.00</div>
+        <div class="s">Cobrado + por cobrar.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Kilos netos</div>
+        <div class="v" id="statKgNetos">0.00 kg</div>
+        <div class="s">Kilos totales del día por producto.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Utilidad estimada</div>
+        <div class="v" id="statUtilidad">$0.00</div>
+        <div class="s">Con base en precio de venta y precio de compra editables.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <section class="card">
+      <div class="cardHead">
+        <div>
+          <h2>Detalle: cuentas por cobrar</h2>
+          <p>Notas a crédito cerradas del día, agrupadas por producto.</p>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="tablaPorCobrar">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Kilos</th>
+              <th>Pzas</th>
+              <th>Precio promedio</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardHead">
+        <div>
+          <h2>Detalle: cobrado</h2>
+          <p>Mostrador neto del día: enviados menos devueltos.</p>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="tablaCobrado">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Enviado kg</th>
+              <th>Devuelto kg</th>
+              <th>Cobrado neto kg</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Venta del día por producto</h2>
+        <p>
+          Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
+          <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>, <b>venta total</b> y
+          <b>ganancia estimada</b>.
+        </p>
+      </div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="tablaMaster">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Precio venta</th>
+            <th>Precio compra</th>
+            <th>Cobrado kg</th>
+            <th>Por cobrar kg</th>
+            <th>Neto kg</th>
+            <th>Ingreso cobrado</th>
+            <th>Ingreso por cobrar</th>
+            <th>Venta total</th>
+            <th>Ganancia estimada</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.
+      Para las <b>notas a crédito</b>, el sistema también respeta el importe real capturado en la nota.
+    </div>
+  </section>
+
+</main>
+
+<footer>VDC 360° · Total de ventas del día · Marciano mode ✅</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // =========================
+  // SUPABASES
+  // =========================
+  const NOTAS_URL = "https://bjebybdqcqscouxlinfd.supabase.co";
+  const NOTAS_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqZWJ5YmRxY3FzY291eGxpbmZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMjQ3MTksImV4cCI6MjA3MTkwMDcxOX0.mQgWtiYEyJTiF04pdcLv63SqPNrU1Iehws0vKqr82O0";
+
+  const MOSTRADOR_URL = "https://eqynjddcosvdqjzztznn.supabase.co";
+  const MOSTRADOR_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxeW5qZGRjb3N2ZHFqenp0em5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMzYwMzIsImV4cCI6MjA3MTcxMjAzMn0.Q51wsGelUvxRfqsMYRY5JduCGyZ7s6AzOhqsRf3kOhk";
+
+  const sbNotas = window.supabase.createClient(NOTAS_URL, NOTAS_KEY);
+  const sbMostrador = window.supabase.createClient(MOSTRADOR_URL, MOSTRADOR_KEY);
+
+  // =========================
+  // CONFIG PRODUCTOS
+  // =========================
+  const PRODUCTOS_ORDEN = [
+    "Bofe",
+    "Bofe Completo",
+    "Cabeza",
+    "Cabeza Congelada",
+    "Cabeza De Rastro",
+    "Cabeza Sin Lengua",
+    "Caja Libro Visceras",
+    "Caja Menudo Canadian",
+    "Caja Menudo Canadian X KG",
+    "Caja Menudo National",
+    "Caja Menudo National X KG",
+    "Caja Menudo Visceras Del Centro",
+    "Caja Menudo Washington",
+    "Corazon",
+    "Cuajo",
+    "Sebo",
+    "Higado",
+    "Lengua",
+    "Libro",
+    "Menudo Sucio",
+    "Panza de Res",
+    "Pata Blanca",
+    "Pata Morena",
+    "Pata Sucia",
+    "PT",
+    "Teleco",
+    "Tripa",
+    "Tripa de Rastro",
+    "Tripa Gorda",
+    "sebo 2"
+  ];
+
+  const ALIAS = {
+    "Bofe": ["bofe"],
+    "Bofe Completo": ["bofe completo"],
+    "Cabeza": ["cabeza", "cabeza de res"],
+    "Cabeza Congelada": ["cabeza congelada"],
+    "Cabeza De Rastro": ["cabeza de rastro", "cabeza de rastro"],
+    "Cabeza Sin Lengua": ["cabeza sin lengua"],
+    "Caja Libro Visceras": ["caja libro visceras", "caja libro vísceras", "caja libro visceras del centro"],
+    "Caja Menudo Canadian": ["caja menudo canadian"],
+    "Caja Menudo Canadian X KG": ["caja menudo canadian x kg"],
+    "Caja Menudo National": ["caja menudo national"],
+    "Caja Menudo National X KG": ["caja menudo national x kg"],
+    "Caja Menudo Visceras Del Centro": ["caja menudo visceras del centro", "caja menudo vísceras del centro", "caja menudo visceras", "caja menudo vísceras"],
+    "Caja Menudo Washington": ["caja menudo washington", "caja washington"],
+    "Corazon": ["corazon", "corazón", "cora"],
+    "Cuajo": ["cuajo", "quajo"],
+    "Sebo": ["sebo"],
+    "Higado": ["higado", "hígado"],
+    "Lengua": ["lengua", "lenguas"],
+    "Libro": ["libro"],
+    "Menudo Sucio": ["menudo sucio"],
+    "Panza de Res": ["panza de res", "panza", "menudo fresco"],
+    "Pata Blanca": ["pata blanca"],
+    "Pata Morena": ["pata morena"],
+    "Pata Sucia": ["pata sucia"],
+    "PT": ["pt"],
+    "Teleco": ["teleco"],
+    "Tripa": ["tripa"],
+    "Tripa de Rastro": ["tripa de rastro", "tripa de rastro", "tripa rastro"],
+    "Tripa Gorda": ["tripa gorda"],
+    "sebo 2": ["sebo 2"]
+  };
+
+  // =========================
+  // ESTADO
+  // =========================
+  let notasChannel = null;
+  let notasDetalleChannel = null;
+  let mostradorEnvChannel = null;
+  let mostradorDevChannel = null;
+
+  let notasCerradas = [];
+  let notasDetalle = [];
+  let mostradorEnviados = [];
+  let mostradorDevueltos = [];
+
+  let preciosDia = {};
+  let tablaMasterRows = [];
+  let tablaPorCobrarRows = [];
+  let tablaCobradoRows = [];
+
+  const $ = (s)=>document.querySelector(s);
+
+  // =========================
+  // UTILS
+  // =========================
+  function todayISO(){
+    const d = new Date();
+    const z = d.getTimezoneOffset() * 60000;
+    return new Date(d - z).toISOString().slice(0,10);
+  }
+
+  function fmtMoney(n){
+    return "$" + Number(n || 0).toLocaleString("es-MX", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function fmtKg(n){
+    return Number(n || 0).toLocaleString("es-MX", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function fmtNum(n){
+    return Number(n || 0).toLocaleString("es-MX", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  }
+
+  function csvEscape(s){
+    return '"' + String(s ?? "").replaceAll('"','""') + '"';
+  }
+
+  function norm(s){
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function num(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function storageKey(){
+    return `vdc_total_ventas_precios_${fechaSel()}`;
+  }
+
+  function fechaSel(){
+    return $("#fecha").value || todayISO();
+  }
+
+  function setRtPill(id, text, type){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = text;
+    el.classList.remove("ok","bad","warn");
+    if(type) el.classList.add(type);
+  }
+
+  function canonProducto(nombre){
+    const n = norm(nombre);
+    for(const producto of PRODUCTOS_ORDEN){
+      const aliases = ALIAS[producto] || [producto];
+      for(const a of aliases){
+        if(norm(a) === n) return producto;
+      }
+    }
+    return null;
+  }
+
+  function loadPreciosDia(){
+    try{
+      preciosDia = JSON.parse(localStorage.getItem(storageKey()) || "{}");
+    }catch{
+      preciosDia = {};
+    }
+  }
+
+  function savePreciosDia(){
+    localStorage.setItem(storageKey(), JSON.stringify(preciosDia));
+  }
+
+  function getPrecioVentaGuardado(producto){
+    return num(preciosDia[producto]?.venta);
+  }
+
+  function getPrecioCompraGuardado(producto){
+    return num(preciosDia[producto]?.compra);
+  }
+
+  function setPrecio(producto, campo, valor){
+    if(!preciosDia[producto]) preciosDia[producto] = { venta:0, compra:0 };
+    preciosDia[producto][campo] = num(valor);
+    savePreciosDia();
+    procesarTodo();
+  }
+
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // =========================
+  // CARGA DE DATOS
+  // =========================
+  async function cargarNotas(){
+    const fecha = fechaSel();
+
+    const { data: notas, error: errNotas } = await sbNotas
+      .from("notas_credito")
+      .select("id, folio, fecha, estado, total, saldo, cliente_id, created_at")
+      .eq("fecha", fecha)
+      .eq("estado", "cerrada")
+      .order("created_at", { ascending:false });
+
+    if(errNotas){
+      console.error("Error notas_credito:", errNotas);
+      notasCerradas = [];
+      notasDetalle = [];
+      return;
+    }
+
+    notasCerradas = notas || [];
+    const ids = notasCerradas.map(x=>x.id);
+
+    if(!ids.length){
+      notasDetalle = [];
+      return;
+    }
+
+    const { data: detalle, error: errDet } = await sbNotas
+      .from("notas_detalle")
+      .select("id, nota_id, producto, cantidad, piezas, precio, importe, created_at")
+      .in("nota_id", ids)
+      .order("created_at", { ascending:false });
+
+    if(errDet){
+      console.error("Error notas_detalle:", errDet);
+      notasDetalle = [];
+      return;
+    }
+
+    notasDetalle = detalle || [];
+  }
+
+  async function cargarMostrador(){
+    const fecha = fechaSel();
+
+    const { data: env, error: errEnv } = await sbMostrador
+      .from("mostrador_enviados")
+      .select("id, fecha, producto, kilos, piezas, origen, congelado, created_at")
+      .eq("fecha", fecha)
+      .order("created_at", { ascending:false });
+
+    if(errEnv){
+      console.error("Error mostrador_enviados:", errEnv);
+      mostradorEnviados = [];
+    }else{
+      mostradorEnviados = env || [];
+    }
+
+    const { data: dev, error: errDev } = await sbMostrador
+      .from("mostrador_devueltos")
+      .select("id, fecha, producto, kilos, created_at")
+      .eq("fecha", fecha)
+      .order("created_at", { ascending:false });
+
+    if(errDev){
+      console.error("Error mostrador_devueltos:", errDev);
+      mostradorDevueltos = [];
+    }else{
+      mostradorDevueltos = dev || [];
+    }
+  }
+
+  // =========================
+  // REALTIME
+  // =========================
+  async function conectarRealtimeNotas(){
+    if(notasChannel){
+      try{ await sbNotas.removeChannel(notasChannel); }catch(e){}
+      notasChannel = null;
+    }
+    if(notasDetalleChannel){
+      try{ await sbNotas.removeChannel(notasDetalleChannel); }catch(e){}
+      notasDetalleChannel = null;
+    }
+
+    const fecha = fechaSel();
+
+    notasChannel = sbNotas
+      .channel(`tv-notas-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"notas_credito", filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarNotas();
+          procesarTodo();
+        }
+      )
+      .subscribe((status)=>{
+        if(status === "SUBSCRIBED") setRtPill("rtNotas", "Notas RT: conectado", "ok");
+        else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT") setRtPill("rtNotas", "Notas RT: error", "bad");
+        else setRtPill("rtNotas", "Notas RT: " + status, "warn");
+      });
+
+    // Sin join filter sencillo, así que refresca todo detalle cuando cambie cualquier detalle
+    notasDetalleChannel = sbNotas
+      .channel(`tv-notas-detalle-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"notas_detalle" },
+        async ()=>{
+          await cargarNotas();
+          procesarTodo();
+        }
+      )
+      .subscribe();
+  }
+
+  async function conectarRealtimeMostrador(){
+    if(mostradorEnvChannel){
+      try{ await sbMostrador.removeChannel(mostradorEnvChannel); }catch(e){}
+      mostradorEnvChannel = null;
+    }
+    if(mostradorDevChannel){
+      try{ await sbMostrador.removeChannel(mostradorDevChannel); }catch(e){}
+      mostradorDevChannel = null;
+    }
+
+    const fecha = fechaSel();
+
+    mostradorEnvChannel = sbMostrador
+      .channel(`tv-mostrador-env-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"mostrador_enviados", filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarMostrador();
+          procesarTodo();
+        }
+      )
+      .subscribe((status)=>{
+        if(status === "SUBSCRIBED") setRtPill("rtMostrador", "Mostrador RT: conectado", "ok");
+        else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT") setRtPill("rtMostrador", "Mostrador RT: error", "bad");
+        else setRtPill("rtMostrador", "Mostrador RT: " + status, "warn");
+      });
+
+    mostradorDevChannel = sbMostrador
+      .channel(`tv-mostrador-dev-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"mostrador_devueltos", filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarMostrador();
+          procesarTodo();
+        }
+      )
+      .subscribe();
+  }
+
+  // =========================
+  // PROCESAMIENTO
+  // =========================
+  function procesarNotasPorCobrar(){
+    const map = new Map();
+
+    for(const row of notasDetalle){
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!map.has(prod)){
+        map.set(prod, {
+          producto: prod,
+          kilos: 0,
+          pzas: 0,
+          importe: 0,
+          sumaPrecioXPeso: 0
+        });
+      }
+
+      const o = map.get(prod);
+      const kg = num(row.cantidad);
+      const pzas = num(row.piezas);
+      const precio = num(row.precio);
+      const importe = num(row.importe);
+
+      o.kilos += kg;
+      o.pzas += pzas;
+      o.importe += importe;
+      o.sumaPrecioXPeso += (precio * kg);
+    }
+
+    const rows = PRODUCTOS_ORDEN.map(producto=>{
+      const r = map.get(producto) || {
+        producto,
+        kilos:0,
+        pzas:0,
+        importe:0,
+        sumaPrecioXPeso:0
+      };
+      const precioPromedio = r.kilos > 0 ? (r.importe / r.kilos) : 0;
+      return {
+        producto,
+        kilos:r.kilos,
+        pzas:r.pzas,
+        importe:r.importe,
+        precioPromedio,
+        precioPromedioPonderado: r.kilos > 0 ? (r.sumaPrecioXPeso / r.kilos) : 0
+      };
+    });
+
+    tablaPorCobrarRows = rows.filter(r=>r.kilos > 0 || r.importe > 0 || r.pzas > 0);
+    return rows;
+  }
+
+  function procesarCobradoMostrador(){
+    const enviadosMap = new Map();
+    const devueltosMap = new Map();
+
+    for(const row of mostradorEnviados){
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!enviadosMap.has(prod)){
+        enviadosMap.set(prod, { producto:prod, enviadoKg:0, devueltoKg:0, cobradoKg:0 });
+      }
+      enviadosMap.get(prod).enviadoKg += num(row.kilos);
+    }
+
+    for(const row of mostradorDevueltos){
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!devueltosMap.has(prod)){
+        devueltosMap.set(prod, { producto:prod, devueltoKg:0 });
+      }
+      devueltosMap.get(prod).devueltoKg += num(row.kilos);
+    }
+
+    const rows = PRODUCTOS_ORDEN.map(producto=>{
+      const env = enviadosMap.get(producto)?.enviadoKg || 0;
+      const dev = devueltosMap.get(producto)?.devueltoKg || 0;
+      return {
+        producto,
+        enviadoKg: env,
+        devueltoKg: dev,
+        cobradoKg: env - dev
+      };
+    });
+
+    tablaCobradoRows = rows.filter(r=>r.enviadoKg !== 0 || r.devueltoKg !== 0 || r.cobradoKg !== 0);
+    return rows;
+  }
+
+  function procesarTablaMaster(){
+    const porCobrar = procesarNotasPorCobrar();
+    const cobrado = procesarCobradoMostrador();
+    const modo = $("#modoPrecioVenta").value || "preferir_guardado";
+
+    const rows = PRODUCTOS_ORDEN.map(producto=>{
+      const rNotas = porCobrar.find(x=>x.producto === producto) || {};
+      const rMost = cobrado.find(x=>x.producto === producto) || {};
+
+      const precioNotas = num(rNotas.precioPromedio);
+      const precioVentaGuardado = getPrecioVentaGuardado(producto);
+      const precioCompraGuardado = getPrecioCompraGuardado(producto);
+
+      let precioVenta = 0;
+      if(modo === "preferir_notas"){
+        precioVenta = precioNotas > 0 ? precioNotas : precioVentaGuardado;
+      } else {
+        precioVenta = precioVentaGuardado > 0 ? precioVentaGuardado : precioNotas;
+      }
+
+      const precioCompra = precioCompraGuardado;
+      const cobradoKg = num(rMost.cobradoKg);
+      const porCobrarKg = num(rNotas.kilos);
+      const netoKg = cobradoKg + porCobrarKg;
+
+      // Cobrado: lo valuamos con precioVenta editable
+      const ingresoCobrado = cobradoKg * precioVenta;
+
+      // Por cobrar: respetamos lo que ya capturaste en notas
+      const ingresoPorCobrar = num(rNotas.importe);
+
+      const ventaTotal = ingresoCobrado + ingresoPorCobrar;
+      const utilidadEstimada = (precioVenta - precioCompra) * netoKg;
+
+      return {
+        producto,
+        precioVenta,
+        precioCompra,
+        cobradoKg,
+        porCobrarKg,
+        netoKg,
+        ingresoCobrado,
+        ingresoPorCobrar,
+        ventaTotal,
+        utilidadEstimada
+      };
+    });
+
+    tablaMasterRows = rows;
+    return rows;
+  }
+
+  // =========================
+  // RENDER
+  // =========================
+  function renderTablaPorCobrar(){
+    const q = norm($("#buscarProducto").value || "");
+    const tbody = $("#tablaPorCobrar tbody");
+
+    const rows = tablaPorCobrarRows.filter(r=>{
+      if(!q) return true;
+      return norm(r.producto).includes(q);
+    });
+
+    tbody.innerHTML = rows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.producto)}</td>
+        <td>${fmtKg(r.kilos)}</td>
+        <td>${fmtNum(r.pzas)}</td>
+        <td>${fmtMoney(r.precioPromedio)}</td>
+        <td>${fmtMoney(r.importe)}</td>
+      </tr>
+    `).join("");
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">Sin movimientos por cobrar para esta fecha.</td></tr>`;
+    }
+  }
+
+  function renderTablaCobrado(){
+    const q = norm($("#buscarProducto").value || "");
+    const tbody = $("#tablaCobrado tbody");
+
+    const rows = tablaCobradoRows.filter(r=>{
+      if(!q) return true;
+      return norm(r.producto).includes(q);
+    });
+
+    tbody.innerHTML = rows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.producto)}</td>
+        <td>${fmtKg(r.enviadoKg)}</td>
+        <td>${fmtKg(r.devueltoKg)}</td>
+        <td>${fmtKg(r.cobradoKg)}</td>
+      </tr>
+    `).join("");
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Sin movimientos cobrados para esta fecha.</td></tr>`;
+    }
+  }
+
+  function renderTablaMaster(){
+    const q = norm($("#buscarProducto").value || "");
+    const tbody = $("#tablaMaster tbody");
+
+    const rows = tablaMasterRows.filter(r=>{
+      if(!q) return false;
+      return norm(r.producto).includes(q);
+    }).length
+      ? tablaMasterRows.filter(r=> norm(r.producto).includes(q))
+      : (q ? [] : tablaMasterRows);
+
+    tbody.innerHTML = rows.map(r=>{
+      const utilidadClass = r.utilidadEstimada >= 0 ? "good" : "bad";
+      return `
+        <tr>
+          <td>${escapeHtml(r.producto)}</td>
+          <td>
+            <input
+              class="cellNum"
+              type="number"
+              step="0.01"
+              value="${Number(r.precioVenta || 0).toFixed(2)}"
+              onchange="setPrecioGlobal('${escapeHtml(r.producto)}','venta', this.value)"
+            />
+          </td>
+          <td>
+            <input
+              class="cellNum"
+              type="number"
+              step="0.01"
+              value="${Number(r.precioCompra || 0).toFixed(2)}"
+              onchange="setPrecioGlobal('${escapeHtml(r.producto)}','compra', this.value)"
+            />
+          </td>
+          <td>${fmtKg(r.cobradoKg)}</td>
+          <td>${fmtKg(r.porCobrarKg)}</td>
+          <td>${fmtKg(r.netoKg)}</td>
+          <td>${fmtMoney(r.ingresoCobrado)}</td>
+          <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+          <td>${fmtMoney(r.ventaTotal)}</td>
+          <td class="${utilidadClass}">${fmtMoney(r.utilidadEstimada)}</td>
+        </tr>
+      `;
+    }).join("");
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="10" class="muted">No hay productos para mostrar con ese filtro.</td></tr>`;
+    }
+  }
+
+  function renderStats(){
+    const totalCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
+    const totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
+    const totalVenta = tablaMasterRows.reduce((a,b)=>a + num(b.ventaTotal), 0);
+    const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
+    const totalUtilidad = tablaMasterRows.reduce((a,b)=>a + num(b.utilidadEstimada), 0);
+
+    $("#statCobrado").textContent = fmtMoney(totalCobrado);
+    $("#statPorCobrar").textContent = fmtMoney(totalPorCobrar);
+    $("#statVentaTotal").textContent = fmtMoney(totalVenta);
+    $("#statKgNetos").textContent = `${fmtKg(totalKg)} kg`;
+    $("#statUtilidad").textContent = fmtMoney(totalUtilidad);
+
+    $("#statUtilidad").classList.remove("good","bad");
+    $("#statUtilidad").classList.add(totalUtilidad >= 0 ? "good" : "bad");
+  }
+
+  function procesarTodo(){
+    procesarTablaMaster();
+    renderTablaPorCobrar();
+    renderTablaCobrado();
+    renderTablaMaster();
+    renderStats();
+  }
+
+  // =========================
+  // EXPORT CSV
+  // =========================
+  function exportCSV(){
+    const head = [
+      "Producto",
+      "Precio venta",
+      "Precio compra",
+      "Cobrado kg",
+      "Por cobrar kg",
+      "Neto kg",
+      "Ingreso cobrado",
+      "Ingreso por cobrar",
+      "Venta total",
+      "Ganancia estimada"
+    ];
+
+    const rows = tablaMasterRows.map(r=>[
+      r.producto,
+      Number(r.precioVenta || 0).toFixed(2),
+      Number(r.precioCompra || 0).toFixed(2),
+      Number(r.cobradoKg || 0).toFixed(2),
+      Number(r.porCobrarKg || 0).toFixed(2),
+      Number(r.netoKg || 0).toFixed(2),
+      Number(r.ingresoCobrado || 0).toFixed(2),
+      Number(r.ingresoPorCobrar || 0).toFixed(2),
+      Number(r.ventaTotal || 0).toFixed(2),
+      Number(r.utilidadEstimada || 0).toFixed(2)
+    ]);
+
+    const csv = [head, ...rows]
+      .map(r => r.map(csvEscape).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `total_ventas_${fechaSel()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // =========================
+  // EVENTOS
+  // =========================
+  async function recargarTodo(){
+    loadPreciosDia();
+    await cargarNotas();
+    await cargarMostrador();
+    procesarTodo();
+  }
+
+  async function reiniciarRealtime(){
+    await conectarRealtimeNotas();
+    await conectarRealtimeMostrador();
+  }
+
+  async function cambiarFecha(){
+    loadPreciosDia();
+    await recargarTodo();
+    await reiniciarRealtime();
+  }
+
+  $("#fecha").addEventListener("change", cambiarFecha);
+  $("#btnRecargar").addEventListener("click", recargarTodo);
+  $("#btnCSV").addEventListener("click", exportCSV);
+  $("#buscarProducto").addEventListener("input", ()=>{
+    renderTablaPorCobrar();
+    renderTablaCobrado();
+    renderTablaMaster();
+  });
+  $("#modoPrecioVenta").addEventListener("change", procesarTodo);
+
+  $("#btnLimpiarPrecios").addEventListener("click", ()=>{
+    if(!confirm("¿Limpiar los precios guardados de esta fecha?")) return;
+    localStorage.removeItem(storageKey());
+    loadPreciosDia();
+    procesarTodo();
+  });
+
+  window.setPrecioGlobal = function(producto, campo, valor){
+    setPrecio(producto, campo, valor);
+  };
+
+  // =========================
+  // INIT
+  // =========================
+  async function init(){
+    $("#fecha").value = todayISO();
+    loadPreciosDia();
+    await recargarTodo();
+    await reiniciarRealtime();
+  }
+
+  init();
+</script>
+</body>
+</html>
