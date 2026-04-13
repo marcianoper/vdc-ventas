@@ -462,6 +462,7 @@
       Los <b>precios de venta</b> se guardan por fecha en el navegador.
       Los <b>precios de compra</b> se autollenan desde <b>Costos</b> con el <b>costo promedio por kg</b> del día,
       excepto <b>Bofe</b>, <b>Sebo</b>, <b>Higado</b> y cualquier producto que sea <b>caja</b>.
+      El total de <b>cuentas por cobrar</b> usa el detalle de notas y, si ese detalle viene en cero, toma como respaldo el <b>total de notas_credito</b>.
     </div>
   </section>
 
@@ -889,6 +890,7 @@
   // =========================
   async function cargarNotas(){
     const fecha = fechaSel();
+    console.log("Fecha filtro:", fecha);
 
     const { data: notas, error: errNotas } = await sbNotas
       .from("notas_credito")
@@ -896,6 +898,8 @@
       .eq("fecha", fecha)
       .eq("estado", "cerrada")
       .order("created_at", { ascending:false });
+
+    console.log("Notas encontradas:", notas, errNotas);
 
     if(errNotas){
       console.error("Error notas_credito:", errNotas);
@@ -906,6 +910,7 @@
 
     notasCerradas = notas || [];
     const ids = notasCerradas.map(x=>x.id);
+    console.log("IDs de notas:", ids);
 
     if(!ids.length){
       notasDetalle = [];
@@ -917,6 +922,8 @@
       .select("id, nota_id, producto, cantidad, piezas, precio, importe, created_at")
       .in("nota_id", ids)
       .order("created_at", { ascending:false });
+
+    console.log("Detalle encontrado:", detalle, errDet);
 
     if(errDet){
       console.error("Error notas_detalle:", errDet);
@@ -1082,7 +1089,9 @@
         importe:0,
         sumaPrecioXPeso:0
       };
+
       const precioPromedio = r.kilos > 0 ? (r.importe / r.kilos) : 0;
+
       return {
         producto,
         kilos:r.kilos,
@@ -1094,6 +1103,14 @@
     });
 
     tablaPorCobrarRows = rows.filter(r=>r.kilos > 0 || r.importe > 0 || r.pzas > 0);
+
+    const totalDetalle = rows.reduce((acc, r) => acc + num(r.importe), 0);
+    const totalNotas = notasCerradas.reduce((acc, n) => acc + num(n.total), 0);
+
+    if(totalDetalle === 0 && totalNotas > 0){
+      console.warn("No hubo importe en detalle; usando total de notas como respaldo:", totalNotas);
+    }
+
     return rows;
   }
 
@@ -1288,8 +1305,13 @@
 
   function renderStats(){
     const totalCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
-    const totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
-    const totalVenta = tablaMasterRows.reduce((a,b)=>a + num(b.ventaTotal), 0);
+
+    let totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
+    if(totalPorCobrar === 0){
+      totalPorCobrar = notasCerradas.reduce((a,b)=>a + num(b.total), 0);
+    }
+
+    const totalVenta = totalCobrado + totalPorCobrar;
     const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
     const totalUtilidad = tablaMasterRows.reduce((a,b)=>a + num(b.utilidadEstimada), 0);
 
