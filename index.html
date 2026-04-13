@@ -459,9 +459,8 @@
     </div>
 
     <div class="note">
-      Los <b>precios de venta</b> salen de tus precios base y puedes ajustarlos por día en el navegador.
-      Los <b>precios de compra</b> se autollenan desde <b>Costos</b> con el <b>costo promedio por kg</b> del día,
-      excepto <b>Bofe</b>, <b>Sebo</b>, <b>Higado</b> y cualquier producto que sea <b>caja</b>.
+      Los <b>precios de venta</b> ya vienen sembrados dentro del archivo y se pueden ajustar por día.
+      Los <b>precios de compra</b> también ya vienen sembrados con tus valores actuales; si existe costo automático del módulo de Costos, se usa donde corresponde.
       Además, <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
       En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
@@ -657,9 +656,10 @@
     "sebo 2"
   ];
 
-  const PRECIOS_BASE = {
+  // Valores de venta actuales que quieres dejar sembrados
+  const PRECIOS_VENTA_DEFAULT = {
     "Bofe": 20.00,
-    "Bofe Completo": 35.00,
+    "Bofe Completo": 25.00,
     "Cabeza": 56.00,
     "Cabeza Congelada": 60.00,
     "Cabeza De Rastro": 60.00,
@@ -670,7 +670,7 @@
     "Caja Menudo National": 2900.00,
     "Caja Menudo National X KG": 109.00,
     "Caja Menudo Visceras Del Centro": 80.00,
-    "Caja Menudo Washington": 105.00,
+    "Caja Menudo Washington": 106.00,
     "Corazon": 30.00,
     "Cuajo": 48.00,
     "Sebo": 12.00,
@@ -686,7 +686,42 @@
     "Teleco": 57.00,
     "Tripa": 45.00,
     "Tripa de Rastro": 54.00,
-    "Tripa Gorda": 41.00
+    "Tripa Gorda": 41.00,
+    "sebo 2": 9.00
+  };
+
+  // Valores de compra actuales que quieres dejar sembrados
+  const PRECIOS_COMPRA_DEFAULT = {
+    "Bofe": 5.00,
+    "Bofe Completo": 36.13,
+    "Cabeza": 36.13,
+    "Cabeza Congelada": 36.13,
+    "Cabeza De Rastro": 46.00,
+    "Cabeza Sin Lengua": 36.13,
+    "Caja Libro Visceras": 40.00,
+    "Caja Menudo Canadian": 2613.00,
+    "Caja Menudo Canadian X KG": 96.00,
+    "Caja Menudo National": 2613.00,
+    "Caja Menudo National X KG": 96.00,
+    "Caja Menudo Visceras Del Centro": 40.00,
+    "Caja Menudo Washington": 96.00,
+    "Corazon": 36.13,
+    "Cuajo": 36.13,
+    "Sebo": 5.00,
+    "Higado": 15.00,
+    "Lengua": 36.13,
+    "Libro": 36.13,
+    "Menudo Sucio": 36.13,
+    "Panza de Res": 36.13,
+    "Pata Blanca": 36.13,
+    "Pata Morena": 36.13,
+    "Pata Sucia": 36.13,
+    "PT": 36.13,
+    "Teleco": 36.13,
+    "Tripa": 36.13,
+    "Tripa de Rastro": 45.00,
+    "Tripa Gorda": 36.13,
+    "sebo 2": 5.00
   };
 
   const PRECIOS_COMPRA_FIJOS = {
@@ -837,12 +872,49 @@
     return null;
   }
 
+  function getDefaultVenta(producto){
+    return num(PRECIOS_VENTA_DEFAULT[producto] || 0);
+  }
+
+  function getDefaultCompra(producto){
+    return num(PRECIOS_COMPRA_DEFAULT[producto] || 0);
+  }
+
+  function buildDefaultPreciosDia(){
+    const obj = {};
+    for(const producto of PRODUCTOS_ORDEN){
+      obj[producto] = {
+        venta: getDefaultVenta(producto),
+        compra: getDefaultCompra(producto)
+      };
+    }
+    return obj;
+  }
+
+  function mergeWithDefaults(saved){
+    const base = buildDefaultPreciosDia();
+    const src = (saved && typeof saved === "object") ? saved : {};
+
+    for(const producto of PRODUCTOS_ORDEN){
+      const row = src[producto] || {};
+      if(row.venta != null && row.venta !== ""){
+        base[producto].venta = num(row.venta);
+      }
+      if(row.compra != null && row.compra !== ""){
+        base[producto].compra = num(row.compra);
+      }
+    }
+    return base;
+  }
+
   function loadPreciosDia(){
     try{
-      preciosDia = JSON.parse(localStorage.getItem(storageKey()) || "{}");
+      const saved = JSON.parse(localStorage.getItem(storageKey()) || "null");
+      preciosDia = mergeWithDefaults(saved);
     }catch{
-      preciosDia = {};
+      preciosDia = buildDefaultPreciosDia();
     }
+    savePreciosDia();
   }
 
   function savePreciosDia(){
@@ -850,19 +922,24 @@
   }
 
   function getPrecioVentaGuardado(producto){
-    return num(preciosDia[producto]?.venta);
+    return num(preciosDia[producto]?.venta ?? getDefaultVenta(producto));
   }
 
   function getPrecioCompraGuardado(producto){
-    return num(preciosDia[producto]?.compra);
+    return num(preciosDia[producto]?.compra ?? getDefaultCompra(producto));
   }
 
   function getPrecioVentaBase(producto){
-    return num(PRECIOS_BASE[producto] || 0);
+    return getDefaultVenta(producto);
   }
 
   function setPrecio(producto, campo, valor){
-    if(!preciosDia[producto]) preciosDia[producto] = { venta:0, compra:0 };
+    if(!preciosDia[producto]){
+      preciosDia[producto] = {
+        venta: getDefaultVenta(producto),
+        compra: getDefaultCompra(producto)
+      };
+    }
     preciosDia[producto][campo] = num(valor);
     savePreciosDia();
     procesarTodo();
@@ -964,7 +1041,6 @@
   // =========================
   async function cargarNotas(){
     const fecha = fechaSel();
-    console.log("Fecha filtro:", fecha);
 
     const { data: notas, error: errNotas } = await sbNotas
       .from("notas_credito")
@@ -972,8 +1048,6 @@
       .eq("fecha", fecha)
       .eq("estado", "cerrada")
       .order("created_at", { ascending:false });
-
-    console.log("Notas encontradas:", notas, errNotas);
 
     if(errNotas){
       console.error("Error notas_credito:", errNotas);
@@ -984,7 +1058,6 @@
 
     notasCerradas = notas || [];
     const ids = notasCerradas.map(x=>x.id);
-    console.log("IDs de notas:", ids);
 
     if(!ids.length){
       notasDetalle = [];
@@ -996,8 +1069,6 @@
       .select("id, nota_id, producto, cantidad, piezas, precio, importe, created_at")
       .in("nota_id", ids)
       .order("created_at", { ascending:false });
-
-    console.log("Detalle encontrado:", detalle, errDet);
 
     if(errDet){
       console.error("Error notas_detalle:", errDet);
