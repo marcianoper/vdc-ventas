@@ -460,8 +460,8 @@
 
     <div class="note">
       Los <b>precios de venta</b> se guardan por fecha en el navegador.
-      Los <b>precios de compra</b> se autollenan desde <b>Costos</b> según la fecha seleccionada,
-      excepto <b>Sebo</b>, <b>Bofe</b> y <b>Higado</b>.
+      Los <b>precios de compra</b> se autollenan desde <b>Costos</b> con el <b>costo promedio por kg</b> del día,
+      excepto <b>Bofe</b>, <b>Sebo</b>, <b>Higado</b> y cualquier producto que sea <b>caja</b>.
     </div>
   </section>
 
@@ -685,19 +685,12 @@
     "sebo 2": ["sebo 2"]
   };
 
-  const COSTOS_TO_VENTAS = {
-    "Corazon": "Corazon",
-    "Tripa": "Tripa",
-    "Cabeza": "Cabeza",
-    "Cuajo": "Cuajo",
-    "Libro": "Libro",
-    "Menudo": "Menudo Sucio",
-    "Pata Sucia": "Pata Sucia",
-    "Teleco": "Teleco",
-    "Lengua": "Lengua"
-  };
-
-  const PRODUCTOS_SIN_AUTO_COMPRA = new Set(["Bofe", "Sebo", "Higado", "sebo 2"]);
+  const PRODUCTOS_SIN_AUTO_COMPRA = new Set([
+    "Bofe",
+    "Sebo",
+    "Higado",
+    "sebo 2"
+  ]);
 
   // =========================
   // ESTADO
@@ -834,6 +827,16 @@
   // =========================
   // COSTOS AUTO
   // =========================
+  function esCaja(producto){
+    return norm(producto).includes("caja");
+  }
+
+  function puedeUsarCostoPromedioGlobal(producto){
+    if(PRODUCTOS_SIN_AUTO_COMPRA.has(producto)) return false;
+    if(esCaja(producto)) return false;
+    return true;
+  }
+
   function cargarCostosAutoDelDia(){
     costosAutoDia = {};
 
@@ -852,40 +855,26 @@
     const kgRows = Array.isArray(raw.kgProduccion) ? raw.kgProduccion : [];
     const matriz = Array.isArray(raw.matriz) ? raw.matriz : [];
 
-    const kgMap = {};
-    for(const row of kgRows){
-      kgMap[row.producto] = num(row.kgDia || 0);
-    }
+    const totalKgDia = kgRows.reduce((acc, row) => acc + num(row.kgDia || 0), 0);
+    const totalCosto = matriz.reduce((acc, row) => acc + num(row.costo || 0), 0);
 
-    const costosPorProducto = {};
-    for(const p of Object.keys(COSTOS_TO_VENTAS)){
-      costosPorProducto[p] = 0;
-    }
+    const costoPromedioGlobal = totalKgDia > 0 ? (totalCosto / totalKgDia) : 0;
 
-    matriz.forEach(row=>{
-      const costo = num(row.costo || 0);
-      const activos = Object.keys(COSTOS_TO_VENTAS).filter(p => row.marks && row.marks[p]);
-      const divisor = activos.length;
-      if(costo > 0 && divisor > 0){
-        const share = costo / divisor;
-        activos.forEach(p=>{
-          costosPorProducto[p] = num(costosPorProducto[p]) + share;
-        });
+    for(const producto of PRODUCTOS_ORDEN){
+      if(puedeUsarCostoPromedioGlobal(producto)){
+        costosAutoDia[producto] = costoPromedioGlobal;
       }
-    });
+    }
 
-    Object.entries(COSTOS_TO_VENTAS).forEach(([productoCostos, productoVentas])=>{
-      const kg = num(kgMap[productoCostos] || 0);
-      const costoTotal = num(costosPorProducto[productoCostos] || 0);
-      const costoKg = kg > 0 ? (costoTotal / kg) : 0;
-      costosAutoDia[productoVentas] = costoKg;
-    });
-
-    setRtPill("rtCostos", "Costos auto: cargados", "ok");
+    if(costoPromedioGlobal > 0){
+      setRtPill("rtCostos", `Costos auto: ${costoPromedioGlobal.toFixed(2)}`, "ok");
+    }else{
+      setRtPill("rtCostos", "Costos auto: 0.00", "warn");
+    }
   }
 
   function getPrecioCompraFinal(producto){
-    if(PRODUCTOS_SIN_AUTO_COMPRA.has(producto)){
+    if(!puedeUsarCostoPromedioGlobal(producto)){
       return getPrecioCompraGuardado(producto);
     }
 
@@ -1180,7 +1169,7 @@
         producto,
         precioVenta,
         precioCompra,
-        compraAuto: !PRODUCTOS_SIN_AUTO_COMPRA.has(producto) && num(costosAutoDia[producto] || 0) > 0,
+        compraAuto: puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0,
         cobradoKg,
         porCobrarKg,
         netoKg,
@@ -1405,7 +1394,7 @@
   });
 
   window.setPrecioGlobal = function(producto, campo, valor){
-    if(campo === "compra" && !PRODUCTOS_SIN_AUTO_COMPRA.has(producto) && num(costosAutoDia[producto] || 0) > 0){
+    if(campo === "compra" && puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0){
       return;
     }
     setPrecio(producto, campo, valor);
