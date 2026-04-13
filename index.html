@@ -443,7 +443,7 @@
       <label>Modo de precio de venta
         <select id="modoPrecioVenta">
           <option value="preferir_guardado" selected>Preferir precio guardado</option>
-          <option value="preferir_notas">Preferir promedio de notas cerradas</option>
+          <option value="preferir_base">Usar precio base del sistema</option>
         </select>
       </label>
 
@@ -459,10 +459,10 @@
     </div>
 
     <div class="note">
-      Los <b>precios de venta</b> se guardan por fecha en el navegador.
+      Los <b>precios de venta</b> salen de tus precios base y puedes ajustarlos por día en el navegador.
       Los <b>precios de compra</b> se autollenan desde <b>Costos</b> con el <b>costo promedio por kg</b> del día,
       excepto <b>Bofe</b>, <b>Sebo</b>, <b>Higado</b> y cualquier producto que sea <b>caja</b>.
-      El total de <b>cuentas por cobrar</b> usa el detalle de notas y, si ese detalle viene en cero, toma como respaldo el <b>total de notas_credito</b>.
+      En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>.
     </div>
   </section>
 
@@ -484,7 +484,7 @@
       <div class="stat">
         <div class="k">Cuentas por cobrar</div>
         <div class="v" id="statPorCobrar">$0.00</div>
-        <div class="s">Notas a crédito cerradas del día.</div>
+        <div class="s">Notas a crédito cerradas del día valuadas con precio de venta.</div>
       </div>
 
       <div class="stat">
@@ -523,7 +523,7 @@
               <th>Producto</th>
               <th>Kilos</th>
               <th>Pzas</th>
-              <th>Precio promedio</th>
+              <th>Precio por kg</th>
               <th>Importe</th>
             </tr>
           </thead>
@@ -590,7 +590,7 @@
 
     <div class="note">
       <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.
-      Para las <b>notas a crédito</b>, el sistema respeta el importe real capturado en la nota.
+      En las <b>notas a crédito</b>, el importe se calcula como <b>kilos × precio de venta</b>.
     </div>
   </section>
 
@@ -652,6 +652,38 @@
     "Tripa Gorda",
     "sebo 2"
   ];
+
+  const PRECIOS_BASE = {
+    "Bofe": 20.00,
+    "Bofe Completo": 35.00,
+    "Cabeza": 56.00,
+    "Cabeza Congelada": 60.00,
+    "Cabeza De Rastro": 60.00,
+    "Cabeza Sin Lengua": 51.00,
+    "Caja Libro Visceras": 80.00,
+    "Caja Menudo Canadian": 2900.00,
+    "Caja Menudo Canadian X KG": 109.00,
+    "Caja Menudo National": 2900.00,
+    "Caja Menudo National X KG": 109.00,
+    "Caja Menudo Visceras Del Centro": 80.00,
+    "Caja Menudo Washington": 105.00,
+    "Corazon": 30.00,
+    "Cuajo": 48.00,
+    "Sebo": 12.00,
+    "Higado": 25.00,
+    "Lengua": 230.00,
+    "Libro": 70.00,
+    "Menudo Sucio": 38.00,
+    "Panza de Res": 60.00,
+    "Pata Blanca": 70.00,
+    "Pata Morena": 60.00,
+    "Pata Sucia": 38.00,
+    "PT": 25.00,
+    "Teleco": 57.00,
+    "Tripa": 45.00,
+    "Tripa de Rastro": 54.00,
+    "Tripa Gorda": 41.00
+  };
 
   const ALIAS = {
     "Bofe": ["bofe"],
@@ -807,6 +839,10 @@
 
   function getPrecioCompraGuardado(producto){
     return num(preciosDia[producto]?.compra);
+  }
+
+  function getPrecioVentaBase(producto){
+    return num(PRECIOS_BASE[producto] || 0);
   }
 
   function setPrecio(producto, campo, valor){
@@ -1064,53 +1100,51 @@
           producto: prod,
           kilos: 0,
           pzas: 0,
-          importe: 0,
-          sumaPrecioXPeso: 0
+          importe: 0
         });
       }
 
       const o = map.get(prod);
       const kg = num(row.cantidad);
       const pzas = num(row.piezas);
-      const precio = num(row.precio);
-      const importe = num(row.importe);
 
       o.kilos += kg;
       o.pzas += pzas;
-      o.importe += importe;
-      o.sumaPrecioXPeso += (precio * kg);
     }
+
+    const modo = $("#modoPrecioVenta").value || "preferir_guardado";
 
     const rows = PRODUCTOS_ORDEN.map(producto=>{
       const r = map.get(producto) || {
         producto,
         kilos:0,
         pzas:0,
-        importe:0,
-        sumaPrecioXPeso:0
+        importe:0
       };
 
-      const precioPromedio = r.kilos > 0 ? (r.importe / r.kilos) : 0;
+      const precioBase = getPrecioVentaBase(producto);
+      const precioGuardado = getPrecioVentaGuardado(producto);
+
+      let precioVenta = 0;
+      if(modo === "preferir_guardado"){
+        precioVenta = precioGuardado > 0 ? precioGuardado : precioBase;
+      } else {
+        precioVenta = precioBase > 0 ? precioBase : precioGuardado;
+      }
+
+      const importeCalculado = r.kilos * precioVenta;
 
       return {
         producto,
         kilos:r.kilos,
         pzas:r.pzas,
-        importe:r.importe,
-        precioPromedio,
-        precioPromedioPonderado: r.kilos > 0 ? (r.sumaPrecioXPeso / r.kilos) : 0
+        importe:importeCalculado,
+        precioPromedio:precioVenta,
+        precioPromedioPonderado:precioVenta
       };
     });
 
     tablaPorCobrarRows = rows.filter(r=>r.kilos > 0 || r.importe > 0 || r.pzas > 0);
-
-    const totalDetalle = rows.reduce((acc, r) => acc + num(r.importe), 0);
-    const totalNotas = notasCerradas.reduce((acc, n) => acc + num(n.total), 0);
-
-    if(totalDetalle === 0 && totalNotas > 0){
-      console.warn("No hubo importe en detalle; usando total de notas como respaldo:", totalNotas);
-    }
-
     return rows;
   }
 
@@ -1162,14 +1196,14 @@
       const rNotas = porCobrar.find(x=>x.producto === producto) || {};
       const rMost = cobrado.find(x=>x.producto === producto) || {};
 
-      const precioNotas = num(rNotas.precioPromedio);
+      const precioBase = getPrecioVentaBase(producto);
       const precioVentaGuardado = getPrecioVentaGuardado(producto);
 
       let precioVenta = 0;
-      if(modo === "preferir_notas"){
-        precioVenta = precioNotas > 0 ? precioNotas : precioVentaGuardado;
+      if(modo === "preferir_guardado"){
+        precioVenta = precioVentaGuardado > 0 ? precioVentaGuardado : precioBase;
       } else {
-        precioVenta = precioVentaGuardado > 0 ? precioVentaGuardado : precioNotas;
+        precioVenta = precioBase > 0 ? precioBase : precioVentaGuardado;
       }
 
       const precioCompra = getPrecioCompraFinal(producto);
@@ -1178,8 +1212,8 @@
       const netoKg = cobradoKg + porCobrarKg;
 
       const ingresoCobrado = cobradoKg * precioVenta;
-      const ingresoPorCobrar = num(rNotas.importe);
-      const ventaTotal = ingresoCobrado + ingresoPorCobrar;
+      const ingresoPorCobrar = porCobrarKg * precioVenta;
+      const ventaTotal = netoKg * precioVenta;
       const utilidadEstimada = (precioVenta - precioCompra) * netoKg;
 
       return {
@@ -1305,12 +1339,7 @@
 
   function renderStats(){
     const totalCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
-
-    let totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
-    if(totalPorCobrar === 0){
-      totalPorCobrar = notasCerradas.reduce((a,b)=>a + num(b.total), 0);
-    }
-
+    const totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
     const totalVenta = totalCobrado + totalPorCobrar;
     const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
     const totalUtilidad = tablaMasterRows.reduce((a,b)=>a + num(b.utilidadEstimada), 0);
