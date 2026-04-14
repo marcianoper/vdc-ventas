@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Total de Ventas — VDC 360°</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
       --brand:#0a7a3b;
@@ -430,7 +433,7 @@
           Esta página toma:
           <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
           <b>cobrado</b> desde el <b>mostrador neto</b> del día
-          y <b>precio de compra</b> desde el <b>costo promedio por kg</b> de la página de Costos.
+          y <b>precio de compra</b> desde el <b>costo promedio por kg</b> guardado en Supabase.
         </p>
       </div>
     </div>
@@ -460,8 +463,10 @@
 
     <div class="note">
       Los <b>precios de venta</b> ya vienen sembrados dentro del archivo y se pueden ajustar por día.
-      Los <b>precios de compra</b> también ya vienen sembrados con tus valores actuales; si existe costo automático del módulo de Costos, se usa donde corresponde.
-      Además, <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
+      Los <b>precios de compra</b> se llenan así:
+      para <b>productos normales</b> se usa el <b>costo promedio por kg</b> guardado en Supabase;
+      <b>no</b> se aplica a <b>cajas</b>, <b>Hígado</b>, <b>Sebo</b>, <b>Corazón</b>, <b>Lengua</b>, ni a productos de <b>Rastro</b>.
+      <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
       En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
       de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
@@ -601,7 +606,6 @@
 
 <footer>VDC 360° · Total de ventas del día · Marciano mode ✅</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // =========================
   // SUPABASES
@@ -612,13 +616,19 @@
   const MOSTRADOR_URL = "https://eqynjddcosvdqjzztznn.supabase.co";
   const MOSTRADOR_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxeW5qZGRjb3N2ZHFqenp0em5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMzYwMzIsImV4cCI6MjA3MTcxMjAzMn0.Q51wsGelUvxRfqsMYRY5JduCGyZ7s6AzOhqsRf3kOhk";
 
+  // Supabase donde vas a guardar el costo promedio por kg actual
+  const COSTOS_PROM_URL = "https://lujroedkbgffobyblbie.supabase.co";
+  const COSTOS_PROM_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1anJvZWRrYmdmZm9ieWJsYmllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxODkzNDgsImV4cCI6MjA3MDc2NTM0OH0.bSbBZeS59aPSEGPj1YGcmZCyQTfgf3fz9pNDuR2ID7c";
+
   const sbNotas = window.supabase.createClient(NOTAS_URL, NOTAS_KEY);
   const sbMostrador = window.supabase.createClient(MOSTRADOR_URL, MOSTRADOR_KEY);
+  const sbCostosProm = window.supabase.createClient(COSTOS_PROM_URL, COSTOS_PROM_KEY);
 
   // =========================
-  // STORAGE COSTOS
+  // TABLA COSTO PROMEDIO
   // =========================
-  const COSTOS_STORAGE_KEY = "vdc_costos_html_v6_materia_prima_auto";
+  const COSTOS_PROM_TABLE = "costos_promedio_actual";
+  const COSTOS_PROM_CLAVE = "actual";
 
   // =========================
   // CONFIG PRODUCTOS
@@ -656,7 +666,6 @@
     "sebo 2"
   ];
 
-  // Valores de venta actuales que quieres dejar sembrados
   const PRECIOS_VENTA_DEFAULT = {
     "Bofe": 20.00,
     "Bofe Completo": 25.00,
@@ -690,7 +699,6 @@
     "sebo 2": 9.00
   };
 
-  // Valores de compra actuales que quieres dejar sembrados
   const PRECIOS_COMPRA_DEFAULT = {
     "Bofe": 5.00,
     "Bofe Completo": 36.13,
@@ -769,10 +777,15 @@
     "sebo 2": ["sebo 2"]
   };
 
+  // =========================
+  // REGLAS DE AUTO-COMPRA
+  // =========================
   const PRODUCTOS_SIN_AUTO_COMPRA = new Set([
     "Bofe",
     "Sebo",
     "Higado",
+    "Corazon",
+    "Lengua",
     "sebo 2"
   ]);
 
@@ -783,6 +796,7 @@
   let notasDetalleChannel = null;
   let mostradorEnvChannel = null;
   let mostradorDevChannel = null;
+  let costosPromChannel = null;
 
   let notasCerradas = [];
   let notasDetalle = [];
@@ -790,10 +804,10 @@
   let mostradorDevueltos = [];
 
   let preciosDia = {};
-  let costosAutoDia = {};
   let tablaMasterRows = [];
   let tablaPorCobrarRows = [];
   let tablaCobradoRows = [];
+  let costoPromedioSupabase = 0;
 
   const $ = (s)=>document.querySelector(s);
 
@@ -954,8 +968,23 @@
       .replaceAll("'","&#039;");
   }
 
+  function esCaja(producto){
+    return norm(producto).includes("caja");
+  }
+
   function esProductoPrecioPorCaja(producto){
     return PRODUCTOS_PRECIO_POR_CAJA.has(producto);
+  }
+
+  function esProductoRastro(producto){
+    return norm(producto).includes("rastro");
+  }
+
+  function puedeUsarCostoPromedioGlobal(producto){
+    if(PRODUCTOS_SIN_AUTO_COMPRA.has(producto)) return false;
+    if(esCaja(producto)) return false;
+    if(esProductoRastro(producto)) return false;
+    return true;
   }
 
   function getPrecioUnitarioVisual(producto, precioVentaReal){
@@ -973,49 +1002,26 @@
   }
 
   // =========================
-  // COSTOS AUTO
+  // COSTO PROMEDIO DESDE SUPABASE
   // =========================
-  function esCaja(producto){
-    return norm(producto).includes("caja");
-  }
+  async function cargarCostoPromedioSupabase(){
+    const { data, error } = await sbCostosProm
+      .from(COSTOS_PROM_TABLE)
+      .select("costo_promedio_kg, updated_at")
+      .eq("clave", COSTOS_PROM_CLAVE)
+      .maybeSingle();
 
-  function puedeUsarCostoPromedioGlobal(producto){
-    if(PRODUCTOS_SIN_AUTO_COMPRA.has(producto)) return false;
-    if(esCaja(producto)) return false;
-    return true;
-  }
-
-  function cargarCostosAutoDelDia(){
-    costosAutoDia = {};
-
-    let raw = null;
-    try{
-      raw = JSON.parse(localStorage.getItem(COSTOS_STORAGE_KEY) || "null");
-    }catch{
-      raw = null;
-    }
-
-    if(!raw){
-      setRtPill("rtCostos", "Costos auto: sin datos", "warn");
+    if(error){
+      console.error("Error cargando costo promedio actual:", error);
+      costoPromedioSupabase = 0;
+      setRtPill("rtCostos", "Costos auto: error", "bad");
       return;
     }
 
-    const kgRows = Array.isArray(raw.kgProduccion) ? raw.kgProduccion : [];
-    const matriz = Array.isArray(raw.matriz) ? raw.matriz : [];
+    costoPromedioSupabase = num(data?.costo_promedio_kg || 0);
 
-    const totalKgDia = kgRows.reduce((acc, row) => acc + num(row.kgDia || 0), 0);
-    const totalCosto = matriz.reduce((acc, row) => acc + num(row.costo || 0), 0);
-
-    const costoPromedioGlobal = totalKgDia > 0 ? (totalCosto / totalKgDia) : 0;
-
-    for(const producto of PRODUCTOS_ORDEN){
-      if(puedeUsarCostoPromedioGlobal(producto)){
-        costosAutoDia[producto] = costoPromedioGlobal;
-      }
-    }
-
-    if(costoPromedioGlobal > 0){
-      setRtPill("rtCostos", `Costos auto: ${costoPromedioGlobal.toFixed(2)}`, "ok");
+    if(costoPromedioSupabase > 0){
+      setRtPill("rtCostos", `Costos auto: ${costoPromedioSupabase.toFixed(2)}`, "ok");
     }else{
       setRtPill("rtCostos", "Costos auto: 0.00", "warn");
     }
@@ -1026,14 +1032,42 @@
       return num(PRECIOS_COMPRA_FIJOS[producto]);
     }
 
-    if(!puedeUsarCostoPromedioGlobal(producto)){
-      return getPrecioCompraGuardado(producto);
+    if(puedeUsarCostoPromedioGlobal(producto) && costoPromedioSupabase > 0){
+      return costoPromedioSupabase;
     }
 
-    const auto = num(costosAutoDia[producto] || 0);
-    if(auto > 0) return auto;
-
     return getPrecioCompraGuardado(producto);
+  }
+
+  async function conectarRealtimeCostosPromedio(){
+    if(costosPromChannel){
+      try{ await sbCostosProm.removeChannel(costosPromChannel); }catch(e){}
+      costosPromChannel = null;
+    }
+
+    costosPromChannel = sbCostosProm
+      .channel("tv-costos-promedio-actual")
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:COSTOS_PROM_TABLE },
+        async ()=>{
+          await cargarCostoPromedioSupabase();
+          procesarTodo();
+        }
+      )
+      .subscribe((status)=>{
+        if(status === "SUBSCRIBED"){
+          if(costoPromedioSupabase > 0){
+            setRtPill("rtCostos", `Costos auto: ${costoPromedioSupabase.toFixed(2)}`, "ok");
+          }else{
+            setRtPill("rtCostos", "Costos auto: conectado", "ok");
+          }
+        }else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT"){
+          setRtPill("rtCostos", "Costos auto: error", "bad");
+        }else{
+          setRtPill("rtCostos", "Costos auto: " + status, "warn");
+        }
+      });
   }
 
   // =========================
@@ -1334,7 +1368,7 @@
         producto,
         precioVenta,
         precioCompra,
-        compraAuto: (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0),
+        compraAuto: (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && costoPromedioSupabase > 0),
         cobradoKg,
         porCobrarKg,
         porCobrarPzas,
@@ -1470,7 +1504,6 @@
   }
 
   function procesarTodo(){
-    cargarCostosAutoDelDia();
     procesarTablaMaster();
     renderTablaPorCobrar();
     renderTablaCobrado();
@@ -1526,6 +1559,7 @@
   // =========================
   async function recargarTodo(){
     loadPreciosDia();
+    await cargarCostoPromedioSupabase();
     await cargarNotas();
     await cargarMostrador();
     procesarTodo();
@@ -1534,6 +1568,7 @@
   async function reiniciarRealtime(){
     await conectarRealtimeNotas();
     await conectarRealtimeMostrador();
+    await conectarRealtimeCostosPromedio();
   }
 
   async function cambiarFecha(){
@@ -1561,21 +1596,11 @@
 
   window.setPrecioGlobal = function(producto, campo, valor){
     if(campo === "compra"){
-      if(PRECIOS_COMPRA_FIJOS[producto] != null){
-        return;
-      }
-      if(puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0){
-        return;
-      }
+      if(PRECIOS_COMPRA_FIJOS[producto] != null) return;
+      if(puedeUsarCostoPromedioGlobal(producto) && costoPromedioSupabase > 0) return;
     }
     setPrecio(producto, campo, valor);
   };
-
-  window.addEventListener("storage", (e)=>{
-    if(e.key === COSTOS_STORAGE_KEY){
-      procesarTodo();
-    }
-  });
 
   // =========================
   // INIT
