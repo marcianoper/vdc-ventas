@@ -627,8 +627,7 @@
   // =========================
   // TABLA COSTO PROMEDIO
   // =========================
-  const COSTOS_PROM_TABLE = "costos_promedio_actual";
-  const COSTOS_PROM_CLAVE = "actual";
+  const COSTOS_PROM_TABLE = "costos_promedio_por_fecha";
 
   // =========================
   // CONFIG PRODUCTOS
@@ -1004,28 +1003,30 @@
   // =========================
   // COSTO PROMEDIO DESDE SUPABASE
   // =========================
-  async function cargarCostoPromedioSupabase(){
-    const { data, error } = await sbCostosProm
-      .from(COSTOS_PROM_TABLE)
-      .select("costo_promedio_kg, updated_at")
-      .eq("clave", COSTOS_PROM_CLAVE)
-      .maybeSingle();
+ async function cargarCostoPromedioSupabase(){
+  const fecha = fechaSel();
 
-    if(error){
-      console.error("Error cargando costo promedio actual:", error);
-      costoPromedioSupabase = 0;
-      setRtPill("rtCostos", "Costos auto: error", "bad");
-      return;
-    }
+  const { data, error } = await sbCostosProm
+    .from(COSTOS_PROM_TABLE)
+    .select("costo_promedio_kg, total_cost, total_kg, updated_at")
+    .eq("fecha", fecha)
+    .maybeSingle();
 
-    costoPromedioSupabase = num(data?.costo_promedio_kg || 0);
-
-    if(costoPromedioSupabase > 0){
-      setRtPill("rtCostos", `Costos auto: ${costoPromedioSupabase.toFixed(2)}`, "ok");
-    }else{
-      setRtPill("rtCostos", "Costos auto: 0.00", "warn");
-    }
+  if(error){
+    console.error("Error cargando costo promedio por fecha:", error);
+    costoPromedioSupabase = 0;
+    setRtPill("rtCostos", "Costos auto: error", "bad");
+    return;
   }
+
+  costoPromedioSupabase = Number(data?.costo_promedio_kg || 0);
+
+  if(costoPromedioSupabase > 0){
+    setRtPill("rtCostos", `Costos ${fecha}: ${costoPromedioSupabase.toFixed(2)}`, "ok");
+  } else {
+    setRtPill("rtCostos", `Costos ${fecha}: sin dato`, "warn");
+  }
+}
 
   function getPrecioCompraFinal(producto){
     if(PRECIOS_COMPRA_FIJOS[producto] != null){
