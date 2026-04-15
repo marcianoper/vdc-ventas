@@ -176,12 +176,16 @@
 
     .filters{
       display:grid;
-      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
       gap:12px;
       align-items:end;
     }
 
-    @media (max-width:1000px){
+    @media (max-width:1200px){
+      .filters{ grid-template-columns:1fr 1fr 1fr; }
+    }
+
+    @media (max-width:900px){
       .filters{ grid-template-columns:1fr 1fr; }
     }
 
@@ -410,7 +414,7 @@
         <div class="logo">VDC</div>
         <div class="title">
           <b>Total de Ventas — VDC 360°</b>
-          <span>Cobrado + Cuentas por cobrar + Ganancia estimada del día</span>
+          <span id="subtituloVista">Cobrado + Cuentas por cobrar + Ganancia estimada del día</span>
         </div>
       </div>
 
@@ -430,7 +434,7 @@
     <div class="cardHead">
       <div>
         <h2>Filtro del día</h2>
-        <p>
+        <p id="textoFiltroDia">
           Esta página toma:
           <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
           <b>cobrado</b> desde el <b>mostrador neto</b> del día
@@ -442,6 +446,13 @@
     <div class="filters">
       <label>Fecha
         <input type="date" id="fecha" />
+      </label>
+
+      <label>Vista
+        <select id="modoVista">
+          <option value="vdc" selected>VDC</option>
+          <option value="carniceria">Carnicería VDC</option>
+        </select>
       </label>
 
       <label>Modo de precio de venta
@@ -462,7 +473,7 @@
       </div>
     </div>
 
-    <div class="note">
+    <div class="note" id="notaExplicativa">
       Los <b>precios de venta</b> se pueden ajustar por día.
       Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
       excepto productos excluidos, cajas y productos de rastro.  
@@ -477,7 +488,7 @@
     <div class="cardHead">
       <div>
         <h2>Resumen del día</h2>
-        <p>Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.</p>
+        <p id="textoResumenDia">Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.</p>
       </div>
     </div>
 
@@ -485,7 +496,7 @@
       <div class="stat">
         <div class="k">Cobrado</div>
         <div class="v" id="statCobrado">$0.00</div>
-        <div class="s">Mostrador neto del día valuado con precio de venta + Venta Bodega de notas cerradas.</div>
+        <div class="s" id="statCobradoDesc">Mostrador neto del día valuado con precio de venta + Venta Bodega.</div>
       </div>
 
       <div class="stat">
@@ -497,7 +508,7 @@
       <div class="stat">
         <div class="k">Cuentas por cobrar</div>
         <div class="v" id="statPorCobrar">$0.00</div>
-        <div class="s">Notas a crédito cerradas del día valuadas con precio de venta.</div>
+        <div class="s" id="statPorCobrarDesc">Notas a crédito cerradas del día valuadas con precio de venta.</div>
       </div>
 
       <div class="stat">
@@ -530,8 +541,8 @@
     <section class="card">
       <div class="cardHead">
         <div>
-          <h2>Detalle: cuentas por cobrar</h2>
-          <p>Notas a crédito cerradas del día, agrupadas por producto.</p>
+          <h2 id="tituloPorCobrar">Detalle: cuentas por cobrar</h2>
+          <p id="textoPorCobrar">Notas a crédito cerradas del día, agrupadas por producto.</p>
         </div>
       </div>
 
@@ -554,8 +565,8 @@
     <section class="card">
       <div class="cardHead">
         <div>
-          <h2>Detalle: cobrado</h2>
-          <p>Mostrador neto del día + Venta Bodega de notas cerradas.</p>
+          <h2 id="tituloCobrado">Detalle: cobrado</h2>
+          <p id="textoCobrado">Mostrador neto del día + Venta Bodega.</p>
         </div>
       </div>
 
@@ -579,7 +590,7 @@
     <div class="cardHead">
       <div>
         <h2>Venta del día por producto</h2>
-        <p>
+        <p id="textoMaster">
           Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
           <b>ganancia por kg</b>, <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>,
           <b>venta total</b> y <b>ganancia estimada</b>.
@@ -756,7 +767,6 @@
     "Hueso",
     "PT",
     "Bofe",
-    "Bofe Completo",
     "Sebo",
     "Sebo2",
     "Lengua"
@@ -862,11 +872,15 @@
   }
 
   function storageKey(){
-    return `vdc_total_ventas_precios_${fechaSel()}`;
+    return `vdc_total_ventas_precios_${fechaSel()}_${modoVistaSel()}`;
   }
 
   function fechaSel(){
     return $("#fecha").value || todayISO();
+  }
+
+  function modoVistaSel(){
+    return $("#modoVista")?.value || "vdc";
   }
 
   function setRtPill(id, text, type){
@@ -896,10 +910,17 @@
     return norm(nombreCliente) === norm("Venta Bodega");
   }
 
-  function clasificarNotaCliente(nombreCliente){
-    if (esCarniceria(nombreCliente)) return "ignorar";
-    if (esVentaBodega(nombreCliente)) return "cobrado";
-    return "por_cobrar";
+  function notaEsCarniceria(nota){
+    return esCarniceria(nota?.clientes?.nombre || "");
+  }
+
+  function notaEsVentaBodega(nota){
+    return esVentaBodega(nota?.clientes?.nombre || "");
+  }
+
+  function notaEsClienteNormal(nota){
+    const nombre = nota?.clientes?.nombre || "";
+    return !esCarniceria(nombre) && !esVentaBodega(nombre);
   }
 
   function getDefaultVenta(producto){
@@ -1006,6 +1027,64 @@
     if(esCaja(producto)) return false;
     if(PRODUCTOS_EXCLUIDOS_COSTO_AUTO.has(producto)) return false;
     return true;
+  }
+
+  function actualizarTextosVista(){
+    const vista = modoVistaSel();
+
+    if(vista === "carniceria"){
+      $("#subtituloVista").textContent = "Vista Carnicería VDC — solo notas cerradas del cliente Carnicería";
+      $("#textoFiltroDia").innerHTML = `
+        Esta vista toma <b>únicamente</b> las <b>notas a crédito cerradas</b> del día del cliente <b>Carnicería</b>.
+        No mezcla mostrador, no mezcla Venta Bodega y no mezcla otros clientes.
+      `;
+      $("#notaExplicativa").innerHTML = `
+        En <b>Carnicería VDC</b>, la columna de <b>por cobrar</b> representa los kilos y el importe de las
+        <b>notas cerradas del cliente Carnicería</b>. La parte de <b>cobrado</b> queda en cero para no mezclar esta vista con mostrador.
+      `;
+      $("#textoResumenDia").textContent = "Resumen aislado de Carnicería VDC con base en notas cerradas del día.";
+      $("#statCobradoDesc").textContent = "En esta vista el cobrado se mantiene en cero para no mezclar con mostrador.";
+      $("#statPorCobrarDesc").textContent = "Notas cerradas del cliente Carnicería valuadas con precio de venta.";
+      $("#tituloPorCobrar").textContent = "Detalle: Carnicería VDC";
+      $("#textoPorCobrar").textContent = "Notas a crédito cerradas del cliente Carnicería, agrupadas por producto.";
+      $("#tituloCobrado").textContent = "Detalle: cobrado";
+      $("#textoCobrado").textContent = "Sin mezcla de mostrador en esta vista.";
+      $("#textoMaster").innerHTML = `
+        Aquí ves el detalle por producto para <b>Carnicería VDC</b>:
+        <b>precio de venta</b>, <b>precio de compra</b>,
+        <b>ganancia por kg</b>, <b>por cobrar</b>, <b>neto</b>,
+        <b>venta total</b> y <b>ganancia estimada</b>.
+      `;
+    } else {
+      $("#subtituloVista").textContent = "Cobrado + Cuentas por cobrar + Ganancia estimada del día";
+      $("#textoFiltroDia").innerHTML = `
+        Esta página toma:
+        <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
+        <b>cobrado</b> desde el <b>mostrador neto</b> del día
+        y <b>precio de compra</b> desde el <b>costo promedio por kg guardado por fecha</b>.
+      `;
+      $("#notaExplicativa").innerHTML = `
+        Los <b>precios de venta</b> se pueden ajustar por día.
+        Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
+        excepto productos excluidos, cajas y productos de rastro.  
+        <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
+        En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
+        <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
+        de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
+      `;
+      $("#textoResumenDia").textContent = "Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.";
+      $("#statCobradoDesc").textContent = "Mostrador neto del día valuado con precio de venta + Venta Bodega.";
+      $("#statPorCobrarDesc").textContent = "Notas a crédito cerradas del día de clientes normales valuadas con precio de venta.";
+      $("#tituloPorCobrar").textContent = "Detalle: cuentas por cobrar";
+      $("#textoPorCobrar").textContent = "Notas a crédito cerradas del día, agrupadas por producto.";
+      $("#tituloCobrado").textContent = "Detalle: cobrado";
+      $("#textoCobrado").textContent = "Mostrador neto del día + Venta Bodega.";
+      $("#textoMaster").innerHTML = `
+        Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
+        <b>ganancia por kg</b>, <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>,
+        <b>venta total</b> y <b>ganancia estimada</b>.
+      `;
+    }
   }
 
   async function cargarCostoPromedioFecha(){
@@ -1244,6 +1323,7 @@
 
   function procesarNotasPorCobrar(){
     const map = new Map();
+    const vista = modoVistaSel();
 
     const notasMap = new Map();
     for(const nota of notasCerradas){
@@ -1252,10 +1332,13 @@
 
     for(const row of notasDetalle){
       const nota = notasMap.get(row.nota_id);
-      const nombreCliente = nota?.clientes?.nombre || "";
-      const clasificacion = clasificarNotaCliente(nombreCliente);
+      if(!nota) continue;
 
-      if(clasificacion !== "por_cobrar") continue;
+      if(vista === "vdc"){
+        if(!notaEsClienteNormal(nota)) continue;
+      } else if(vista === "carniceria"){
+        if(!notaEsCarniceria(nota)) continue;
+      }
 
       const prod = canonProducto(row.producto);
       if(!prod) continue;
@@ -1312,6 +1395,20 @@
   }
 
   function procesarCobradoMostrador(){
+    const vista = modoVistaSel();
+
+    if(vista === "carniceria"){
+      const rows = PRODUCTOS_ORDEN.map(producto=>({
+        producto,
+        enviadoKg: 0,
+        devueltoKg: 0,
+        cobradoKg: 0
+      }));
+
+      tablaCobradoRows = rows.filter(r=>r.enviadoKg !== 0 || r.devueltoKg !== 0 || r.cobradoKg !== 0);
+      return rows;
+    }
+
     const enviadosMap = new Map();
     const devueltosMap = new Map();
 
@@ -1344,10 +1441,9 @@
 
     for(const row of notasDetalle){
       const nota = notasMap.get(row.nota_id);
-      const nombreCliente = nota?.clientes?.nombre || "";
-      const clasificacion = clasificarNotaCliente(nombreCliente);
+      if(!nota) continue;
 
-      if(clasificacion !== "cobrado") continue;
+      if(!notaEsVentaBodega(nota)) continue;
 
       const prod = canonProducto(row.producto);
       if(!prod) continue;
@@ -1457,7 +1553,7 @@
     `).join("");
 
     if(!rows.length){
-      tbody.innerHTML = `<tr><td colspan="5" class="muted">Sin movimientos por cobrar para esta fecha.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">Sin movimientos para esta vista y fecha.</td></tr>`;
     }
   }
 
@@ -1480,7 +1576,7 @@
     `).join("");
 
     if(!rows.length){
-      tbody.innerHTML = `<tr><td colspan="4" class="muted">Sin movimientos cobrados para esta fecha.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Sin movimientos cobrados para esta vista y fecha.</td></tr>`;
     }
   }
 
@@ -1561,6 +1657,7 @@
   }
 
   function procesarTodo(){
+    actualizarTextosVista();
     procesarTablaMaster();
     renderTablaPorCobrar();
     renderTablaCobrado();
@@ -1605,7 +1702,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `total_ventas_${fechaSel()}.csv`;
+    a.download = `total_ventas_${modoVistaSel()}_${fechaSel()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -1631,6 +1728,10 @@
   }
 
   $("#fecha").addEventListener("change", cambiarFecha);
+  $("#modoVista").addEventListener("change", async ()=>{
+    loadPreciosDia();
+    procesarTodo();
+  });
   $("#btnRecargar").addEventListener("click", recargarTodo);
   $("#btnCSV").addEventListener("click", exportCSV);
   $("#buscarProducto").addEventListener("input", ()=>{
@@ -1641,7 +1742,7 @@
   $("#modoPrecioVenta").addEventListener("change", procesarTodo);
 
   $("#btnLimpiarPrecios").addEventListener("click", ()=>{
-    if(!confirm("¿Limpiar los precios guardados de esta fecha?")) return;
+    if(!confirm("¿Limpiar los precios guardados de esta fecha y esta vista?")) return;
     localStorage.removeItem(storageKey());
     loadPreciosDia();
     procesarTodo();
@@ -1664,6 +1765,7 @@
 
   async function init(){
     $("#fecha").value = todayISO();
+    $("#modoVista").value = "vdc";
     loadPreciosDia();
     await recargarTodo();
     await reiniciarRealtime();
