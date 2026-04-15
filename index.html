@@ -253,8 +253,12 @@
 
     .stats{
       display:grid;
-      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      grid-template-columns: repeat(7, minmax(180px, 1fr));
       gap:12px;
+    }
+
+    @media (max-width:1400px){
+      .stats{ grid-template-columns: repeat(4, minmax(180px, 1fr)); }
     }
 
     @media (max-width:1100px){
@@ -485,9 +489,21 @@
       </div>
 
       <div class="stat">
+        <div class="k">Ganancia cobrada</div>
+        <div class="v" id="statGananciaCobrado">$0.00</div>
+        <div class="s">Utilidad estimada solo del producto ya cobrado.</div>
+      </div>
+
+      <div class="stat">
         <div class="k">Cuentas por cobrar</div>
         <div class="v" id="statPorCobrar">$0.00</div>
         <div class="s">Notas a crédito cerradas del día valuadas con precio de venta.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Ganancia por cobrar</div>
+        <div class="v" id="statGananciaPorCobrar">$0.00</div>
+        <div class="s">Utilidad estimada del producto vendido a crédito.</div>
       </div>
 
       <div class="stat">
@@ -503,9 +519,9 @@
       </div>
 
       <div class="stat">
-        <div class="k">Utilidad estimada</div>
+        <div class="k">Utilidad estimada total</div>
         <div class="v" id="statUtilidad">$0.00</div>
-        <div class="s">Con base en precio de venta y precio de compra del día.</div>
+        <div class="s">Suma de utilidad cobrada + utilidad por cobrar.</div>
       </div>
     </div>
   </section>
@@ -592,7 +608,9 @@
     </div>
 
     <div class="note">
-      <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.
+      <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.  
+      <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.  
+      <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.  
       En las <b>notas a crédito</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto para
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, que se valúan por <b>piezas</b>.
     </div>
@@ -759,7 +777,7 @@
     "Cuajo": ["cuajo", "quajo"],
     "Sebo": ["sebo"],
     "Higado": ["higado", "hígado"],
-     "Hueso": ["hueso", "Hueso"],
+    "Hueso": ["hueso", "Hueso"],
     "Lengua": ["lengua", "lenguas"],
     "Libro": ["libro"],
     "Menudo Sucio": ["menudo sucio"],
@@ -1335,7 +1353,10 @@
 
       const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVenta);
       const ventaTotal = ingresoCobrado + ingresoPorCobrar;
-      const utilidadEstimada = (precioVenta - precioCompra) * netoKg;
+
+      const gananciaCobrado = (precioVenta - precioCompra) * cobradoKg;
+      const gananciaPorCobrar = (precioVenta - precioCompra) * porCobrarKg;
+      const utilidadEstimada = gananciaCobrado + gananciaPorCobrar;
 
       return {
         producto,
@@ -1349,6 +1370,8 @@
         ingresoCobrado,
         ingresoPorCobrar,
         ventaTotal,
+        gananciaCobrado,
+        gananciaPorCobrar,
         utilidadEstimada
       };
     });
@@ -1455,15 +1478,25 @@
     const totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
     const totalVenta = totalCobrado + totalPorCobrar;
     const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
-    const totalUtilidad = tablaMasterRows.reduce((a,b)=>a + num(b.utilidadEstimada), 0);
+
+    const totalGananciaCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaCobrado), 0);
+    const totalGananciaPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaPorCobrar), 0);
+    const totalUtilidad = totalGananciaCobrado + totalGananciaPorCobrar;
 
     $("#statCobrado").textContent = fmtMoney(totalCobrado);
+    $("#statGananciaCobrado").textContent = fmtMoney(totalGananciaCobrado);
     $("#statPorCobrar").textContent = fmtMoney(totalPorCobrar);
+    $("#statGananciaPorCobrar").textContent = fmtMoney(totalGananciaPorCobrar);
     $("#statVentaTotal").textContent = fmtMoney(totalVenta);
     $("#statKgNetos").textContent = `${fmtKg(totalKg)} kg`;
     $("#statUtilidad").textContent = fmtMoney(totalUtilidad);
 
+    $("#statGananciaCobrado").classList.remove("good","bad");
+    $("#statGananciaPorCobrar").classList.remove("good","bad");
     $("#statUtilidad").classList.remove("good","bad");
+
+    $("#statGananciaCobrado").classList.add(totalGananciaCobrado >= 0 ? "good" : "bad");
+    $("#statGananciaPorCobrar").classList.add(totalGananciaPorCobrar >= 0 ? "good" : "bad");
     $("#statUtilidad").classList.add(totalUtilidad >= 0 ? "good" : "bad");
   }
 
@@ -1485,6 +1518,8 @@
       "Neto kg",
       "Ingreso cobrado",
       "Ingreso por cobrar",
+      "Ganancia cobrada",
+      "Ganancia por cobrar",
       "Venta total",
       "Ganancia estimada"
     ];
@@ -1498,6 +1533,8 @@
       Number(r.netoKg || 0).toFixed(2),
       Number(r.ingresoCobrado || 0).toFixed(2),
       Number(r.ingresoPorCobrar || 0).toFixed(2),
+      Number(r.gananciaCobrado || 0).toFixed(2),
+      Number(r.gananciaPorCobrar || 0).toFixed(2),
       Number(r.ventaTotal || 0).toFixed(2),
       Number(r.utilidadEstimada || 0).toFixed(2)
     ]);
