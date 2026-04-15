@@ -485,7 +485,7 @@
       <div class="stat">
         <div class="k">Cobrado</div>
         <div class="v" id="statCobrado">$0.00</div>
-        <div class="s">Mostrador neto del día valuado con precio de venta.</div>
+        <div class="s">Mostrador neto del día valuado con precio de venta + Venta Bodega de notas cerradas.</div>
       </div>
 
       <div class="stat">
@@ -555,7 +555,7 @@
       <div class="cardHead">
         <div>
           <h2>Detalle: cobrado</h2>
-          <p>Mostrador neto del día: enviados menos devueltos.</p>
+          <p>Mostrador neto del día + Venta Bodega de notas cerradas.</p>
         </div>
       </div>
 
@@ -756,6 +756,7 @@
     "Hueso",
     "PT",
     "Bofe",
+    "Bofe Completo",
     "Sebo",
     "Sebo2",
     "Lengua"
@@ -885,6 +886,20 @@
       }
     }
     return null;
+  }
+
+  function esCarniceria(nombreCliente){
+    return norm(nombreCliente) === norm("Carniceria");
+  }
+
+  function esVentaBodega(nombreCliente){
+    return norm(nombreCliente) === norm("Venta Bodega");
+  }
+
+  function clasificarNotaCliente(nombreCliente){
+    if (esCarniceria(nombreCliente)) return "ignorar";
+    if (esVentaBodega(nombreCliente)) return "cobrado";
+    return "por_cobrar";
   }
 
   function getDefaultVenta(producto){
@@ -1047,7 +1062,7 @@
 
     const { data: notas, error: errNotas } = await sbNotas
       .from("notas_credito")
-      .select("id, folio, fecha, estado, total, saldo, cliente_id, created_at")
+      .select("id, folio, fecha, estado, total, saldo, cliente_id, created_at, clientes(nombre)")
       .eq("fecha", fecha)
       .eq("estado", "cerrada")
       .order("created_at", { ascending:false });
@@ -1230,7 +1245,18 @@
   function procesarNotasPorCobrar(){
     const map = new Map();
 
+    const notasMap = new Map();
+    for(const nota of notasCerradas){
+      notasMap.set(nota.id, nota);
+    }
+
     for(const row of notasDetalle){
+      const nota = notasMap.get(row.nota_id);
+      const nombreCliente = nota?.clientes?.nombre || "";
+      const clasificacion = clasificarNotaCliente(nombreCliente);
+
+      if(clasificacion !== "por_cobrar") continue;
+
       const prod = canonProducto(row.producto);
       if(!prod) continue;
 
@@ -1309,14 +1335,40 @@
       devueltosMap.get(prod).devueltoKg += num(row.kilos);
     }
 
+    const notasMap = new Map();
+    for(const nota of notasCerradas){
+      notasMap.set(nota.id, nota);
+    }
+
+    const ventaBodegaMap = new Map();
+
+    for(const row of notasDetalle){
+      const nota = notasMap.get(row.nota_id);
+      const nombreCliente = nota?.clientes?.nombre || "";
+      const clasificacion = clasificarNotaCliente(nombreCliente);
+
+      if(clasificacion !== "cobrado") continue;
+
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!ventaBodegaMap.has(prod)){
+        ventaBodegaMap.set(prod, { producto:prod, kilos:0 });
+      }
+
+      ventaBodegaMap.get(prod).kilos += num(row.cantidad);
+    }
+
     const rows = PRODUCTOS_ORDEN.map(producto=>{
       const env = enviadosMap.get(producto)?.enviadoKg || 0;
       const dev = devueltosMap.get(producto)?.devueltoKg || 0;
+      const vb = ventaBodegaMap.get(producto)?.kilos || 0;
+
       return {
         producto,
         enviadoKg: env,
         devueltoKg: dev,
-        cobradoKg: env - dev
+        cobradoKg: (env - dev) + vb
       };
     });
 
