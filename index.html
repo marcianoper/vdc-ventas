@@ -321,7 +321,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1000px;
+      min-width:1200px;
     }
 
     th, td{
@@ -465,7 +465,7 @@
     <div class="note">
       Los <b>precios de venta</b> se pueden ajustar por día.
       Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
-      excepto productos excluidos, cajas y productos de rastro.  
+      excepto productos excluidos, cajas y productos de rastro.
       <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
       En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
@@ -599,6 +599,8 @@
             <th>Neto kg</th>
             <th>Ingreso cobrado</th>
             <th>Ingreso por cobrar</th>
+            <th>Ganancia cobrada</th>
+            <th>Ganancia por cobrar</th>
             <th>Venta total</th>
             <th>Ganancia estimada</th>
           </tr>
@@ -608,9 +610,9 @@
     </div>
 
     <div class="note">
-      <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.  
-      <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.  
-      <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.  
+      <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.<br>
+      <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
+      <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
       En las <b>notas a crédito</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto para
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, que se valúan por <b>piezas</b>.
     </div>
@@ -790,7 +792,7 @@
     "Tripa": ["tripa"],
     "Tripa de Rastro": ["tripa de rastro", "tripa rastro"],
     "Tripa Gorda": ["tripa gorda"],
-    "Sebo2": ["Sebo2"]
+    "Sebo2": ["sebo2"]
   };
 
   let notasChannel = null;
@@ -1438,6 +1440,9 @@
 
     tbody.innerHTML = rows.length ? rows.map(r=>{
       const utilidadClass = r.utilidadEstimada >= 0 ? "good" : "bad";
+      const gananciaCobradaClass = r.gananciaCobrado >= 0 ? "good" : "bad";
+      const gananciaPorCobrarClass = r.gananciaPorCobrar >= 0 ? "good" : "bad";
+
       const compraCell = r.compraAuto
         ? `<input class="cellReadonly" type="text" value="${Number(r.precioCompra || 0).toFixed(2)}" readonly />`
         : `<input
@@ -1466,11 +1471,13 @@
           <td>${fmtKg(r.netoKg)}</td>
           <td>${fmtMoney(r.ingresoCobrado)}</td>
           <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+          <td class="${gananciaCobradaClass}">${fmtMoney(r.gananciaCobrado)}</td>
+          <td class="${gananciaPorCobrarClass}">${fmtMoney(r.gananciaPorCobrar)}</td>
           <td>${fmtMoney(r.ventaTotal)}</td>
           <td class="${utilidadClass}">${fmtMoney(r.utilidadEstimada)}</td>
         </tr>
       `;
-    }).join("") : `<tr><td colspan="10" class="muted">No hay productos para mostrar con ese filtro.</td></tr>`;
+    }).join("") : `<tr><td colspan="12" class="muted">No hay productos para mostrar con ese filtro.</td></tr>`;
   }
 
   function renderStats(){
