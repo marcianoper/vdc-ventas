@@ -321,7 +321,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1200px;
+      min-width:1180px;
     }
 
     th, td{
@@ -465,7 +465,7 @@
     <div class="note">
       Los <b>precios de venta</b> se pueden ajustar por día.
       Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
-      excepto productos excluidos, cajas y productos de rastro.
+      excepto productos excluidos, cajas y productos de rastro.  
       <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
       En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
@@ -581,8 +581,8 @@
         <h2>Venta del día por producto</h2>
         <p>
           Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
-          <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>, <b>venta total</b> y
-          <b>ganancia estimada</b>.
+          <b>ganancia por kg</b>, <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>,
+          <b>venta total</b> y <b>ganancia estimada</b>.
         </p>
       </div>
     </div>
@@ -594,13 +594,12 @@
             <th>Producto</th>
             <th>Precio venta</th>
             <th>Precio compra</th>
+            <th>Ganancia por kg</th>
             <th>Cobrado kg</th>
             <th>Por cobrar kg</th>
             <th>Neto kg</th>
             <th>Ingreso cobrado</th>
             <th>Ingreso por cobrar</th>
-            <th>Ganancia cobrada</th>
-            <th>Ganancia por cobrar</th>
             <th>Venta total</th>
             <th>Ganancia estimada</th>
           </tr>
@@ -610,6 +609,7 @@
     </div>
 
     <div class="note">
+      <b>Ganancia por kg</b> = <b>precio de venta - precio de compra</b>.<br>
       <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.<br>
       <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
       <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
@@ -1344,6 +1344,8 @@
       }
 
       const precioCompra = getPrecioCompraFinal(producto);
+      const gananciaPorKg = precioVenta - precioCompra;
+
       const cobradoKg = num(rMost.cobradoKg);
       const porCobrarKg = num(rNotas.kilos);
       const porCobrarPzas = num(rNotas.pzas);
@@ -1356,14 +1358,15 @@
       const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVenta);
       const ventaTotal = ingresoCobrado + ingresoPorCobrar;
 
-      const gananciaCobrado = (precioVenta - precioCompra) * cobradoKg;
-      const gananciaPorCobrar = (precioVenta - precioCompra) * porCobrarKg;
+      const gananciaCobrado = gananciaPorKg * cobradoKg;
+      const gananciaPorCobrar = gananciaPorKg * porCobrarKg;
       const utilidadEstimada = gananciaCobrado + gananciaPorCobrar;
 
       return {
         producto,
         precioVenta,
         precioCompra,
+        gananciaPorKg,
         compraAuto: (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0),
         cobradoKg,
         porCobrarKg,
@@ -1440,8 +1443,7 @@
 
     tbody.innerHTML = rows.length ? rows.map(r=>{
       const utilidadClass = r.utilidadEstimada >= 0 ? "good" : "bad";
-      const gananciaCobradaClass = r.gananciaCobrado >= 0 ? "good" : "bad";
-      const gananciaPorCobrarClass = r.gananciaPorCobrar >= 0 ? "good" : "bad";
+      const margenClass = r.gananciaPorKg >= 0 ? "good" : "bad";
 
       const compraCell = r.compraAuto
         ? `<input class="cellReadonly" type="text" value="${Number(r.precioCompra || 0).toFixed(2)}" readonly />`
@@ -1466,18 +1468,17 @@
             />
           </td>
           <td>${compraCell}</td>
+          <td class="${margenClass}">${fmtMoney(r.gananciaPorKg)}</td>
           <td>${fmtKg(r.cobradoKg)}</td>
           <td>${fmtKg(r.porCobrarKg)}</td>
           <td>${fmtKg(r.netoKg)}</td>
           <td>${fmtMoney(r.ingresoCobrado)}</td>
           <td>${fmtMoney(r.ingresoPorCobrar)}</td>
-          <td class="${gananciaCobradaClass}">${fmtMoney(r.gananciaCobrado)}</td>
-          <td class="${gananciaPorCobrarClass}">${fmtMoney(r.gananciaPorCobrar)}</td>
           <td>${fmtMoney(r.ventaTotal)}</td>
           <td class="${utilidadClass}">${fmtMoney(r.utilidadEstimada)}</td>
         </tr>
       `;
-    }).join("") : `<tr><td colspan="12" class="muted">No hay productos para mostrar con ese filtro.</td></tr>`;
+    }).join("") : `<tr><td colspan="11" class="muted">No hay productos para mostrar con ese filtro.</td></tr>`;
   }
 
   function renderStats(){
@@ -1520,13 +1521,12 @@
       "Producto",
       "Precio venta",
       "Precio compra",
+      "Ganancia por kg",
       "Cobrado kg",
       "Por cobrar kg",
       "Neto kg",
       "Ingreso cobrado",
       "Ingreso por cobrar",
-      "Ganancia cobrada",
-      "Ganancia por cobrar",
       "Venta total",
       "Ganancia estimada"
     ];
@@ -1535,13 +1535,12 @@
       r.producto,
       Number(r.precioVenta || 0).toFixed(2),
       Number(r.precioCompra || 0).toFixed(2),
+      Number(r.gananciaPorKg || 0).toFixed(2),
       Number(r.cobradoKg || 0).toFixed(2),
       Number(r.porCobrarKg || 0).toFixed(2),
       Number(r.netoKg || 0).toFixed(2),
       Number(r.ingresoCobrado || 0).toFixed(2),
       Number(r.ingresoPorCobrar || 0).toFixed(2),
-      Number(r.gananciaCobrado || 0).toFixed(2),
-      Number(r.gananciaPorCobrar || 0).toFixed(2),
       Number(r.ventaTotal || 0).toFixed(2),
       Number(r.utilidadEstimada || 0).toFixed(2)
     ]);
