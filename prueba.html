@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Total de Ventas — VDC 360°</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --brand:#0a7a3b;
+      --brand2:#0f9a52;
+      --bg:#f6f7f8;
+      --card:#ffffff;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --shadow:0 18px 50px rgba(2,6,23,.10);
+      --shadow2:0 10px 24px rgba(2,6,23,.10);
+      --danger:#b91c1c;
+      --dark:#111827;
+      --warn:#b45309;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 520px at 18% -10%, rgba(15,154,82,.16), transparent 55%),
+        radial-gradient(900px 420px at 98% 10%, rgba(10,122,59,.14), transparent 55%),
+        var(--bg);
+    }
+
+    .wrap{ max-width:1440px; margin:0 auto; padding:0 16px; }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      backdrop-filter:saturate(140%) blur(10px);
+      background:rgba(246,247,248,.80);
+      border-bottom:1px solid rgba(229,231,235,.75);
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      color:#fff;
+      font-weight:1000;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));
+      box-shadow:0 10px 20px rgba(10,122,59,.20);
+    }
+
+    .title b{
+      display:block;
+      font-size:15px;
+      line-height:1.1;
+    }
+
+    .title span{
+      display:block;
+      margin-top:5px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .barRight{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(229,231,235,.95);
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+      font-size:12px;
+      font-weight:1000;
+      color:#111827;
+    }
+
+    .pill.ok{
+      color:var(--brand);
+      background:rgba(10,122,59,.10);
+      border-color:rgba(10,122,59,.18);
+    }
+
+    .pill.bad{
+      color:var(--danger);
+      background:#fff1f2;
+      border-color:#fecdd3;
+    }
+
+    .pill.warn{
+      color:var(--warn);
+      background:#fff7ed;
+      border-color:#fed7aa;
+    }
+
+    .btnLink{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:14px;
+      text-decoration:none;
+      font-weight:1000;
+      color:#111827;
+      background:#fff;
+      border:1px solid rgba(229,231,235,.95);
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+    }
+
+    main{ padding:16px 0 28px; }
+
+    .card{
+      background:var(--card);
+      border-radius:22px;
+      box-shadow:var(--shadow2);
+      border:1px solid rgba(2,6,23,.06);
+      padding:14px;
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .cardHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .cardHead h2{
+      margin:0;
+      font-size:14px;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+
+    .cardHead p{
+      margin:7px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      line-height:1.35;
+      max-width:80ch;
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      gap:12px;
+      align-items:end;
+    }
+
+    @media (max-width:1200px){
+      .filters{ grid-template-columns:1fr 1fr 1fr; }
+    }
+
+    @media (max-width:900px){
+      .filters{ grid-template-columns:1fr 1fr; }
+    }
+
+    @media (max-width:620px){
+      .filters{ grid-template-columns:1fr; }
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:1000;
+      color:#111827;
+    }
+
+    input, select, textarea{
+      width:100%;
+      padding:11px 12px;
+      margin-top:6px;
+      border-radius:14px;
+      border:1px solid rgba(229,231,235,.95);
+      background:rgba(255,255,255,.92);
+      outline:none;
+      color:var(--ink);
+      font-weight:800;
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(10,122,59,.35);
+      box-shadow:0 0 0 4px rgba(10,122,59,.10), 0 8px 18px rgba(2,6,23,.06);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:12px 14px;
+      border:none;
+      border-radius:16px;
+      cursor:pointer;
+      font-weight:1000;
+      color:#fff;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));
+      box-shadow:0 10px 20px rgba(10,122,59,.20);
+      transition:filter .16s ease, transform .16s ease;
+    }
+
+    .btn:hover{
+      filter:brightness(1.05);
+      transform:translateY(-1px);
+    }
+
+    .btn.dark{
+      background:#111827;
+      box-shadow:0 10px 20px rgba(17,24,39,.18);
+    }
+
+    .btn.gray{
+      background:#475569;
+      box-shadow:0 10px 20px rgba(71,85,105,.18);
+    }
+
+    .btnRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(7, minmax(180px, 1fr));
+      gap:12px;
+    }
+
+    @media (max-width:1400px){
+      .stats{ grid-template-columns: repeat(4, minmax(180px, 1fr)); }
+    }
+
+    @media (max-width:1100px){
+      .stats{ grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+    }
+
+    @media (max-width:620px){
+      .stats{ grid-template-columns:1fr; }
+    }
+
+    .stat{
+      background:#fff;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 8px 18px rgba(2,6,23,.06);
+    }
+
+    .stat .k{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:1000;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+
+    .stat .v{
+      margin-top:8px;
+      font-size:24px;
+      font-weight:1000;
+      letter-spacing:-.5px;
+    }
+
+    .stat .s{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    @media (max-width:980px){
+      .grid2{ grid-template-columns:1fr; }
+    }
+
+    .tableWrap{
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(229,231,235,.95);
+      box-shadow:0 10px 24px rgba(2,6,23,.06);
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1180px;
+    }
+
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(229,231,235,.9);
+      text-align:center;
+      font-size:12.5px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:#111827;
+      color:#fff;
+      z-index:2;
+      font-weight:1000;
+      letter-spacing:.2px;
+    }
+
+    td:first-child, th:first-child{
+      text-align:left;
+      padding-left:12px;
+    }
+
+    tr:hover td{ background:#f9fafb; }
+
+    .cellNum{
+      width:110px;
+      padding:8px 10px;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:12px;
+      font-weight:900;
+      background:#fff;
+      box-shadow:none;
+      margin:0;
+      text-align:right;
+    }
+
+    .cellReadonly{
+      width:110px;
+      padding:8px 10px;
+      border:1px solid rgba(229,231,235,.95);
+      border-radius:12px;
+      font-weight:900;
+      background:#f8fafc;
+      box-shadow:none;
+      margin:0;
+      text-align:right;
+      color:#0f172a;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .note{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      line-height:1.4;
+      margin-top:10px;
+    }
+
+    .good{ color:var(--brand); }
+    .bad{ color:var(--danger); }
+    .warnTxt{ color:var(--warn); }
+
+    footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+      padding:10px 0 24px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">VDC</div>
+        <div class="title">
+          <b>Total de Ventas — VDC 360°</b>
+          <span id="subtituloVista">Cobrado + Cuentas por cobrar + Ganancia estimada del día</span>
+        </div>
+      </div>
+
+      <div class="barRight">
+        <a class="btnLink" href="https://marcianoper.github.io/vdc-central/">← VDC Central</a>
+        <span id="rtNotas" class="pill">Notas RT: —</span>
+        <span id="rtMostrador" class="pill">Mostrador RT: —</span>
+        <span id="rtCostos" class="pill">Costos por fecha: —</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Filtro del día</h2>
+        <p id="textoFiltroDia">
+          Esta página toma:
+          <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
+          <b>cobrado</b> desde el <b>mostrador neto</b> del día
+          y <b>precio de compra</b> desde el <b>costo promedio por kg guardado por fecha</b>.
+        </p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <label>Fecha
+        <input type="date" id="fecha" />
+      </label>
+
+      <label>Vista
+        <select id="modoVista">
+          <option value="vdc" selected>VDC</option>
+          <option value="carniceria">Carnicería VDC</option>
+        </select>
+      </label>
+
+      <label>Modo de precio de venta
+        <select id="modoPrecioVenta">
+          <option value="preferir_guardado" selected>Preferir precio guardado</option>
+          <option value="preferir_base">Usar precio base del sistema</option>
+        </select>
+      </label>
+
+      <label>Buscar producto
+        <input type="text" id="buscarProducto" placeholder="Ej. Tripa / Cabeza / Libro" />
+      </label>
+
+      <div class="btnRow">
+        <button class="btn" id="btnRecargar">Actualizar</button>
+        <button class="btn dark" id="btnCSV">Exportar CSV</button>
+        <button class="btn gray" id="btnLimpiarPrecios">Limpiar precios del día</button>
+      </div>
+    </div>
+
+    <div class="note" id="notaExplicativa">
+      Los <b>precios de venta</b> se pueden ajustar por día.
+      Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
+      excepto productos excluidos, cajas y productos de rastro.  
+      <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
+      En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
+      <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
+      de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Resumen del día</h2>
+        <p id="textoResumenDia">Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">Cobrado</div>
+        <div class="v" id="statCobrado">$0.00</div>
+        <div class="s" id="statCobradoDesc">Mostrador neto del día valuado con precio de venta + Venta Bodega.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Ganancia cobrada</div>
+        <div class="v" id="statGananciaCobrado">$0.00</div>
+        <div class="s">Utilidad estimada solo del producto ya cobrado.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Cuentas por cobrar</div>
+        <div class="v" id="statPorCobrar">$0.00</div>
+        <div class="s" id="statPorCobrarDesc">Notas a crédito cerradas del día valuadas con precio de venta.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Ganancia por cobrar</div>
+        <div class="v" id="statGananciaPorCobrar">$0.00</div>
+        <div class="s">Utilidad estimada del producto vendido a crédito.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Venta total</div>
+        <div class="v" id="statVentaTotal">$0.00</div>
+        <div class="s">Cobrado + por cobrar.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Kilos netos</div>
+        <div class="v" id="statKgNetos">0.00 kg</div>
+        <div class="s">Kilos totales del día por producto.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Utilidad estimada total</div>
+        <div class="v" id="statUtilidad">$0.00</div>
+        <div class="s">Suma de utilidad cobrada + utilidad por cobrar.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <section class="card">
+      <div class="cardHead">
+        <div>
+          <h2 id="tituloPorCobrar">Detalle: cuentas por cobrar</h2>
+          <p id="textoPorCobrar">Notas a crédito cerradas del día, agrupadas por producto.</p>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="tablaPorCobrar">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Kilos</th>
+              <th>Pzas</th>
+              <th>Precio por kg</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardHead">
+        <div>
+          <h2 id="tituloCobrado">Detalle: cobrado</h2>
+          <p id="textoCobrado">Mostrador neto del día + Venta Bodega.</p>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table id="tablaCobrado">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Enviado kg</th>
+              <th>Devuelto kg</th>
+              <th>Cobrado neto kg</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Venta del día por producto</h2>
+        <p id="textoMaster">
+          Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
+          <b>ganancia por kg</b>, <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>,
+          <b>venta total</b> y <b>ganancia estimada</b>.
+        </p>
+      </div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="tablaMaster">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Precio venta</th>
+            <th>Precio compra</th>
+            <th>Ganancia por kg</th>
+            <th>Cobrado kg</th>
+            <th>Por cobrar kg</th>
+            <th>Neto kg</th>
+            <th>Ingreso cobrado</th>
+            <th>Ingreso por cobrar</th>
+            <th>Venta total</th>
+            <th>Ganancia estimada</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <b>Ganancia por kg</b> = <b>precio de venta - precio de compra</b>.<br>
+      <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.<br>
+      <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
+      <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
+      En las <b>notas a crédito</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto para
+      <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, que se valúan por <b>piezas</b>.
+    </div>
+  </section>
+
+</main>
+
+<footer>VDC 360° · Total de ventas del día · Marciano mode ✅</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const NOTAS_URL = "https://bjebybdqcqscouxlinfd.supabase.co";
+  const NOTAS_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqZWJ5YmRxY3FzY291eGxpbmZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMjQ3MTksImV4cCI6MjA3MTkwMDcxOX0.mQgWtiYEyJTiF04pdcLv63SqPNrU1Iehws0vKqr82O0";
+  const MOSTRADOR_URL = "https://eqynjddcosvdqjzztznn.supabase.co";
+  const MOSTRADOR_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxeW5qZGRjb3N2ZHFqenp0em5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxMzYwMzIsImV4cCI6MjA3MTcxMjAzMn0.Q51wsGelUvxRfqsMYRY5JduCGyZ7s6AzOhqsRf3kOhk";
+  const RESUMEN_URL = "https://lujroedkbgffobyblbie.supabase.co";
+  const RESUMEN_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1anJvZWRrYmdmZm9ieWJsYmllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxODkzNDgsImV4cCI6MjA3MDc2NTM0OH0.bSbBZeS59aPSEGPj1YGcmZCyQTfgf3fz9pNDuR2ID7c";
+
+  const sbNotas = window.supabase.createClient(NOTAS_URL, NOTAS_KEY);
+  const sbMostrador = window.supabase.createClient(MOSTRADOR_URL, MOSTRADOR_KEY);
+  const sbResumen = window.supabase.createClient(RESUMEN_URL, RESUMEN_KEY);
+
+  const COSTOS_PROMEDIO_TABLE = "costos_promedio_por_fecha";
+
+  const PRODUCTOS_ORDEN = [
+    "Bofe",
+    "Bofe Completo",
+    "Cabeza",
+    "Cabeza Congelada",
+    "Cabeza De Rastro",
+    "Cabeza Sin Lengua",
+    "Caja Libro Visceras",
+    "Caja Menudo Canadian",
+    "Caja Menudo Canadian X KG",
+    "Caja Menudo National",
+    "Caja Menudo National X KG",
+    "Caja Menudo Visceras Del Centro",
+    "Caja Menudo Washington",
+    "Corazon",
+    "Cuajo",
+    "Sebo",
+    "Higado",
+    "Hueso",
+    "Lengua",
+    "Libro",
+    "Menudo Sucio",
+    "Panza de Res",
+    "Pata Blanca",
+    "Pata Morena",
+    "Pata Sucia",
+    "PT",
+    "Teleco",
+    "Tripa",
+    "Tripa de Rastro",
+    "Tripa Gorda",
+    "Sebo2"
+  ];
+
+  const PRECIOS_VENTA_DEFAULT = {
+    "Bofe": 20.00,
+    "Bofe Completo": 25.00,
+    "Cabeza": 56.00,
+    "Cabeza Congelada": 60.00,
+    "Cabeza De Rastro": 60.00,
+    "Cabeza Sin Lengua": 51.00,
+    "Caja Libro Visceras": 80.00,
+    "Caja Menudo Canadian": 2900.00,
+    "Caja Menudo Canadian X KG": 109.00,
+    "Caja Menudo National": 2900.00,
+    "Caja Menudo National X KG": 109.00,
+    "Caja Menudo Visceras Del Centro": 80.00,
+    "Caja Menudo Washington": 106.00,
+    "Corazon": 30.00,
+    "Cuajo": 48.00,
+    "Sebo": 12.00,
+    "Higado": 25.00,
+    "Hueso": 2.00,
+    "Lengua": 230.00,
+    "Libro": 70.00,
+    "Menudo Sucio": 38.00,
+    "Panza de Res": 60.00,
+    "Pata Blanca": 70.00,
+    "Pata Morena": 60.00,
+    "Pata Sucia": 38.00,
+    "PT": 25.00,
+    "Teleco": 57.00,
+    "Tripa": 45.00,
+    "Tripa de Rastro": 54.00,
+    "Tripa Gorda": 41.00,
+    "Sebo2": 9.00
+  };
+
+  const PRECIOS_COMPRA_DEFAULT = {
+    "Bofe": 0,
+    "Bofe Completo": 0,
+    "Cabeza": 36.13,
+    "Cabeza Congelada": 36.13,
+    "Cabeza De Rastro": 46.00,
+    "Cabeza Sin Lengua": 36.13,
+    "Caja Libro Visceras": 40.00,
+    "Caja Menudo Canadian": 2613.00,
+    "Caja Menudo Canadian X KG": 96.00,
+    "Caja Menudo National": 2613.00,
+    "Caja Menudo National X KG": 96.00,
+    "Caja Menudo Visceras Del Centro": 40.00,
+    "Caja Menudo Washington": 96.00,
+    "Corazon": 36.13,
+    "Cuajo": 36.13,
+    "Sebo": 0,
+    "Higado": 0,
+    "Hueso": 0,
+    "Lengua": 36.13,
+    "Libro": 36.13,
+    "Menudo Sucio": 36.13,
+    "Panza de Res": 36.13,
+    "Pata Blanca": 36.13,
+    "Pata Morena": 36.13,
+    "Pata Sucia": 36.13,
+    "PT": 0,
+    "Teleco": 36.13,
+    "Tripa": 36.13,
+    "Tripa de Rastro": 45.00,
+    "Tripa Gorda": 36.13,
+    "Sebo2": 0
+  };
+
+  const PRECIOS_COMPRA_FIJOS = {
+    "Tripa de Rastro": 45,
+    "Cabeza De Rastro": 46
+  };
+
+  const KG_POR_CAJA_COMPLETA = 27.22;
+
+  const PRODUCTOS_PRECIO_POR_CAJA = new Set([
+    "Caja Menudo Canadian",
+    "Caja Menudo National"
+  ]);
+
+  const PRODUCTOS_EXCLUIDOS_COSTO_AUTO = new Set([
+    "Higado",
+    "Hueso",
+    "PT",
+    "Bofe",
+    "Sebo",
+    "Sebo2",
+    "Lengua"
+  ]);
+
+  const ALIAS = {
+    "Bofe": ["bofe"],
+    "Bofe Completo": ["bofe completo"],
+    "Cabeza": ["cabeza", "cabeza de res"],
+    "Cabeza Congelada": ["cabeza congelada"],
+    "Cabeza De Rastro": ["cabeza de rastro"],
+    "Cabeza Sin Lengua": ["cabeza sin lengua"],
+    "Caja Libro Visceras": ["caja libro visceras", "caja libro vísceras", "caja libro visceras del centro"],
+    "Caja Menudo Canadian": ["caja menudo canadian"],
+    "Caja Menudo Canadian X KG": ["caja menudo canadian x kg"],
+    "Caja Menudo National": ["caja menudo national"],
+    "Caja Menudo National X KG": ["caja menudo national x kg"],
+    "Caja Menudo Visceras Del Centro": ["caja menudo visceras del centro", "caja menudo vísceras del centro", "caja menudo visceras", "caja menudo vísceras"],
+    "Caja Menudo Washington": ["caja menudo washington", "caja washington"],
+    "Corazon": ["corazon", "corazón", "cora"],
+    "Cuajo": ["cuajo", "quajo"],
+    "Sebo": ["sebo"],
+    "Higado": ["higado", "hígado"],
+    "Hueso": ["hueso", "Hueso"],
+    "Lengua": ["lengua", "lenguas"],
+    "Libro": ["libro"],
+    "Menudo Sucio": ["menudo sucio"],
+    "Panza de Res": ["panza de res", "panza", "menudo fresco"],
+    "Pata Blanca": ["pata blanca"],
+    "Pata Morena": ["pata morena"],
+    "Pata Sucia": ["pata sucia"],
+    "PT": ["pt"],
+    "Teleco": ["teleco"],
+    "Tripa": ["tripa"],
+    "Tripa de Rastro": ["tripa de rastro", "tripa rastro"],
+    "Tripa Gorda": ["tripa gorda"],
+    "Sebo2": ["sebo2"]
+  };
+
+  let notasChannel = null;
+  let notasDetalleChannel = null;
+  let mostradorEnvChannel = null;
+  let mostradorDevChannel = null;
+  let costosPromedioChannel = null;
+
+  let notasCerradas = [];
+  let notasDetalle = [];
+  let mostradorEnviados = [];
+  let mostradorDevueltos = [];
+
+  let preciosDia = {};
+  let costosAutoDia = {};
+  let tablaMasterRows = [];
+  let tablaPorCobrarRows = [];
+  let tablaCobradoRows = [];
+  let costoPromedioFechaSeleccionada = 0;
+
+  const $ = (s)=>document.querySelector(s);
+
+  function todayISO(){
+    const d = new Date();
+    const z = d.getTimezoneOffset() * 60000;
+    return new Date(d - z).toISOString().slice(0,10);
+  }
+
+  function fmtMoney(n){
+    return "$" + Number(n || 0).toLocaleString("es-MX", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function fmtKg(n){
+    return Number(n || 0).toLocaleString("es-MX", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function fmtNum(n){
+    return Number(n || 0).toLocaleString("es-MX", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  }
+
+  function csvEscape(s){
+    return '"' + String(s ?? "").replaceAll('"','""') + '"';
+  }
+
+  function norm(s){
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function num(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function storageKey(){
+    return `vdc_total_ventas_precios_${fechaSel()}_${modoVistaSel()}`;
+  }
+
+  function fechaSel(){
+    return $("#fecha").value || todayISO();
+  }
+
+  function modoVistaSel(){
+    return $("#modoVista")?.value || "vdc";
+  }
+
+  function setRtPill(id, text, type){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = text;
+    el.classList.remove("ok","bad","warn");
+    if(type) el.classList.add(type);
+  }
+
+  function canonProducto(nombre){
+    const n = norm(nombre);
+    for(const producto of PRODUCTOS_ORDEN){
+      const aliases = ALIAS[producto] || [producto];
+      for(const a of aliases){
+        if(norm(a) === n) return producto;
+      }
+    }
+    return null;
+  }
+
+  function esCarniceria(nombreCliente){
+    return norm(nombreCliente) === norm("Carniceria");
+  }
+
+  function esVentaBodega(nombreCliente){
+    return norm(nombreCliente) === norm("Venta Bodega");
+  }
+
+  function notaEsCarniceria(nota){
+    return esCarniceria(nota?.clientes?.nombre || "");
+  }
+
+  function notaEsVentaBodega(nota){
+    return esVentaBodega(nota?.clientes?.nombre || "");
+  }
+
+  function notaEsClienteNormal(nota){
+    const nombre = nota?.clientes?.nombre || "";
+    return !esCarniceria(nombre) && !esVentaBodega(nombre);
+  }
+
+  function getDefaultVenta(producto){
+    return num(PRECIOS_VENTA_DEFAULT[producto] || 0);
+  }
+
+  function getDefaultCompra(producto){
+    return num(PRECIOS_COMPRA_DEFAULT[producto] || 0);
+  }
+
+  function buildDefaultPreciosDia(){
+    const obj = {};
+    for(const producto of PRODUCTOS_ORDEN){
+      obj[producto] = {
+        venta: getDefaultVenta(producto),
+        compra: getDefaultCompra(producto)
+      };
+    }
+    return obj;
+  }
+
+  function mergeWithDefaults(saved){
+    const base = buildDefaultPreciosDia();
+    const src = (saved && typeof saved === "object") ? saved : {};
+    for(const producto of PRODUCTOS_ORDEN){
+      const row = src[producto] || {};
+      if(row.venta != null && row.venta !== "") base[producto].venta = num(row.venta);
+      if(row.compra != null && row.compra !== "") base[producto].compra = num(row.compra);
+    }
+    return base;
+  }
+
+  function loadPreciosDia(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(storageKey()) || "null");
+      preciosDia = mergeWithDefaults(saved);
+    }catch{
+      preciosDia = buildDefaultPreciosDia();
+    }
+    savePreciosDia();
+  }
+
+  function savePreciosDia(){
+    localStorage.setItem(storageKey(), JSON.stringify(preciosDia));
+  }
+
+  function getPrecioVentaGuardado(producto){
+    return num(preciosDia[producto]?.venta ?? getDefaultVenta(producto));
+  }
+
+  function getPrecioCompraGuardado(producto){
+    return num(preciosDia[producto]?.compra ?? getDefaultCompra(producto));
+  }
+
+  function getPrecioVentaBase(producto){
+    return getDefaultVenta(producto);
+  }
+
+  function setPrecio(producto, campo, valor){
+    if(!preciosDia[producto]){
+      preciosDia[producto] = {
+        venta: getDefaultVenta(producto),
+        compra: getDefaultCompra(producto)
+      };
+    }
+    preciosDia[producto][campo] = num(valor);
+    savePreciosDia();
+    procesarTodo();
+  }
+
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function esCaja(producto){
+    return norm(producto).includes("caja");
+  }
+
+  function esProductoPrecioPorCaja(producto){
+    return PRODUCTOS_PRECIO_POR_CAJA.has(producto);
+  }
+
+  function getPrecioUnitarioVisual(producto, precioVentaReal){
+    if(esProductoPrecioPorCaja(producto)){
+      return KG_POR_CAJA_COMPLETA > 0 ? (precioVentaReal / KG_POR_CAJA_COMPLETA) : 0;
+    }
+    return precioVentaReal;
+  }
+
+  function calcularImportePorProducto(producto, kilos, piezas, precioVenta){
+    if(esProductoPrecioPorCaja(producto)){
+      return num(piezas) * num(precioVenta);
+    }
+    return num(kilos) * num(precioVenta);
+  }
+
+  function puedeUsarCostoPromedioGlobal(producto){
+    if(PRECIOS_COMPRA_FIJOS[producto] != null) return false;
+    if(esCaja(producto)) return false;
+    if(PRODUCTOS_EXCLUIDOS_COSTO_AUTO.has(producto)) return false;
+    return true;
+  }
+
+  function actualizarTextosVista(){
+    const vista = modoVistaSel();
+
+    if(vista === "carniceria"){
+      $("#subtituloVista").textContent = "Vista Carnicería VDC — solo notas cerradas del cliente Carnicería";
+      $("#textoFiltroDia").innerHTML = `
+        Esta vista toma <b>únicamente</b> las <b>notas a crédito cerradas</b> del día del cliente <b>Carnicería</b>.
+        No mezcla mostrador, no mezcla Venta Bodega y no mezcla otros clientes.
+      `;
+      $("#notaExplicativa").innerHTML = `
+        En <b>Carnicería VDC</b>, la columna de <b>por cobrar</b> representa los kilos y el importe de las
+        <b>notas cerradas del cliente Carnicería</b>. La parte de <b>cobrado</b> queda en cero para no mezclar esta vista con mostrador.
+      `;
+      $("#textoResumenDia").textContent = "Resumen aislado de Carnicería VDC con base en notas cerradas del día.";
+      $("#statCobradoDesc").textContent = "En esta vista el cobrado se mantiene en cero para no mezclar con mostrador.";
+      $("#statPorCobrarDesc").textContent = "Notas cerradas del cliente Carnicería valuadas con precio de venta.";
+      $("#tituloPorCobrar").textContent = "Detalle: Carnicería VDC";
+      $("#textoPorCobrar").textContent = "Notas a crédito cerradas del cliente Carnicería, agrupadas por producto.";
+      $("#tituloCobrado").textContent = "Detalle: cobrado";
+      $("#textoCobrado").textContent = "Sin mezcla de mostrador en esta vista.";
+      $("#textoMaster").innerHTML = `
+        Aquí ves el detalle por producto para <b>Carnicería VDC</b>:
+        <b>precio de venta</b>, <b>precio de compra</b>,
+        <b>ganancia por kg</b>, <b>por cobrar</b>, <b>neto</b>,
+        <b>venta total</b> y <b>ganancia estimada</b>.
+      `;
+    } else {
+      $("#subtituloVista").textContent = "Cobrado + Cuentas por cobrar + Ganancia estimada del día";
+      $("#textoFiltroDia").innerHTML = `
+        Esta página toma:
+        <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
+        <b>cobrado</b> desde el <b>mostrador neto</b> del día
+        y <b>precio de compra</b> desde el <b>costo promedio por kg guardado por fecha</b>.
+      `;
+      $("#notaExplicativa").innerHTML = `
+        Los <b>precios de venta</b> se pueden ajustar por día.
+        Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
+        excepto productos excluidos, cajas y productos de rastro.  
+        <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
+        En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
+        <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
+        de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
+      `;
+      $("#textoResumenDia").textContent = "Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.";
+      $("#statCobradoDesc").textContent = "Mostrador neto del día valuado con precio de venta + Venta Bodega.";
+      $("#statPorCobrarDesc").textContent = "Notas a crédito cerradas del día de clientes normales valuadas con precio de venta.";
+      $("#tituloPorCobrar").textContent = "Detalle: cuentas por cobrar";
+      $("#textoPorCobrar").textContent = "Notas a crédito cerradas del día, agrupadas por producto.";
+      $("#tituloCobrado").textContent = "Detalle: cobrado";
+      $("#textoCobrado").textContent = "Mostrador neto del día + Venta Bodega.";
+      $("#textoMaster").innerHTML = `
+        Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
+        <b>ganancia por kg</b>, <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>,
+        <b>venta total</b> y <b>ganancia estimada</b>.
+      `;
+    }
+  }
+
+  async function cargarCostoPromedioFecha(){
+    const fecha = fechaSel();
+
+    const { data, error } = await sbResumen
+      .from(COSTOS_PROMEDIO_TABLE)
+      .select("fecha, costo_promedio_kg, total_cost, total_kg")
+      .eq("fecha", fecha)
+      .limit(1);
+
+    if(error){
+      console.error("Error costos_promedio_por_fecha:", error);
+      costoPromedioFechaSeleccionada = 0;
+      costosAutoDia = {};
+      setRtPill("rtCostos", "Costos por fecha: error", "bad");
+      return;
+    }
+
+    const row = Array.isArray(data) && data.length ? data[0] : null;
+    costoPromedioFechaSeleccionada = num(row?.costo_promedio_kg || 0);
+
+    costosAutoDia = {};
+    for(const producto of PRODUCTOS_ORDEN){
+      if(puedeUsarCostoPromedioGlobal(producto)){
+        costosAutoDia[producto] = costoPromedioFechaSeleccionada;
+      }
+    }
+
+    if(costoPromedioFechaSeleccionada > 0){
+      setRtPill("rtCostos", `Costos por fecha: ${costoPromedioFechaSeleccionada.toFixed(2)}`, "ok");
+    } else {
+      setRtPill("rtCostos", "Costos por fecha: sin dato", "warn");
+    }
+  }
+
+  function getPrecioCompraFinal(producto){
+    if(PRECIOS_COMPRA_FIJOS[producto] != null){
+      return num(PRECIOS_COMPRA_FIJOS[producto]);
+    }
+
+    if(!puedeUsarCostoPromedioGlobal(producto)){
+      return getPrecioCompraGuardado(producto);
+    }
+
+    const auto = num(costosAutoDia[producto] || 0);
+    if(auto > 0) return auto;
+
+    return getPrecioCompraGuardado(producto);
+  }
+
+  async function cargarNotas(){
+    const fecha = fechaSel();
+
+    const { data: notas, error: errNotas } = await sbNotas
+      .from("notas_credito")
+      .select("id, folio, fecha, estado, total, saldo, cliente_id, created_at, clientes(nombre)")
+      .eq("fecha", fecha)
+      .eq("estado", "cerrada")
+      .order("created_at", { ascending:false });
+
+    if(errNotas){
+      console.error("Error notas_credito:", errNotas);
+      notasCerradas = [];
+      notasDetalle = [];
+      return;
+    }
+
+    notasCerradas = notas || [];
+    const ids = notasCerradas.map(x=>x.id);
+
+    if(!ids.length){
+      notasDetalle = [];
+      return;
+    }
+
+    const { data: detalle, error: errDet } = await sbNotas
+      .from("notas_detalle")
+      .select("id, nota_id, producto, cantidad, piezas, precio, importe, created_at")
+      .in("nota_id", ids)
+      .order("created_at", { ascending:false });
+
+    if(errDet){
+      console.error("Error notas_detalle:", errDet);
+      notasDetalle = [];
+      return;
+    }
+
+    notasDetalle = detalle || [];
+  }
+
+  async function cargarMostrador(){
+    const fecha = fechaSel();
+
+    const { data: env, error: errEnv } = await sbMostrador
+      .from("mostrador_enviados")
+      .select("id, fecha, producto, kilos, piezas, origen, congelado, created_at")
+      .eq("fecha", fecha)
+      .order("created_at", { ascending:false });
+
+    if(errEnv){
+      console.error("Error mostrador_enviados:", errEnv);
+      mostradorEnviados = [];
+    }else{
+      mostradorEnviados = env || [];
+    }
+
+    const { data: dev, error: errDev } = await sbMostrador
+      .from("mostrador_devueltos")
+      .select("id, fecha, producto, kilos, created_at")
+      .eq("fecha", fecha)
+      .order("created_at", { ascending:false });
+
+    if(errDev){
+      console.error("Error mostrador_devueltos:", errDev);
+      mostradorDevueltos = [];
+    }else{
+      mostradorDevueltos = dev || [];
+    }
+  }
+
+  async function conectarRealtimeNotas(){
+    if(notasChannel){
+      try{ await sbNotas.removeChannel(notasChannel); }catch(e){}
+      notasChannel = null;
+    }
+    if(notasDetalleChannel){
+      try{ await sbNotas.removeChannel(notasDetalleChannel); }catch(e){}
+      notasDetalleChannel = null;
+    }
+
+    const fecha = fechaSel();
+
+    notasChannel = sbNotas
+      .channel(`tv-notas-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"notas_credito", filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarNotas();
+          procesarTodo();
+        }
+      )
+      .subscribe((status)=>{
+        if(status === "SUBSCRIBED") setRtPill("rtNotas", "Notas RT: conectado", "ok");
+        else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT") setRtPill("rtNotas", "Notas RT: error", "bad");
+        else setRtPill("rtNotas", "Notas RT: " + status, "warn");
+      });
+
+    notasDetalleChannel = sbNotas
+      .channel(`tv-notas-detalle-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"notas_detalle" },
+        async ()=>{
+          await cargarNotas();
+          procesarTodo();
+        }
+      )
+      .subscribe();
+  }
+
+  async function conectarRealtimeMostrador(){
+    if(mostradorEnvChannel){
+      try{ await sbMostrador.removeChannel(mostradorEnvChannel); }catch(e){}
+      mostradorEnvChannel = null;
+    }
+    if(mostradorDevChannel){
+      try{ await sbMostrador.removeChannel(mostradorDevChannel); }catch(e){}
+      mostradorDevChannel = null;
+    }
+
+    const fecha = fechaSel();
+
+    mostradorEnvChannel = sbMostrador
+      .channel(`tv-mostrador-env-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"mostrador_enviados", filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarMostrador();
+          procesarTodo();
+        }
+      )
+      .subscribe((status)=>{
+        if(status === "SUBSCRIBED") setRtPill("rtMostrador", "Mostrador RT: conectado", "ok");
+        else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT") setRtPill("rtMostrador", "Mostrador RT: error", "bad");
+        else setRtPill("rtMostrador", "Mostrador RT: " + status, "warn");
+      });
+
+    mostradorDevChannel = sbMostrador
+      .channel(`tv-mostrador-dev-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:"mostrador_devueltos", filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarMostrador();
+          procesarTodo();
+        }
+      )
+      .subscribe();
+  }
+
+  async function conectarRealtimeCostos(){
+    if(costosPromedioChannel){
+      try{ await sbResumen.removeChannel(costosPromedioChannel); }catch(e){}
+      costosPromedioChannel = null;
+    }
+
+    const fecha = fechaSel();
+
+    costosPromedioChannel = sbResumen
+      .channel(`tv-costos-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:COSTOS_PROMEDIO_TABLE, filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarCostoPromedioFecha();
+          procesarTodo();
+        }
+      )
+      .subscribe((status)=>{
+        if(status === "SUBSCRIBED"){
+          if(costoPromedioFechaSeleccionada > 0){
+            setRtPill("rtCostos", `Costos por fecha: ${costoPromedioFechaSeleccionada.toFixed(2)}`, "ok");
+          } else {
+            setRtPill("rtCostos", "Costos por fecha: conectado", "warn");
+          }
+        } else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT"){
+          setRtPill("rtCostos", "Costos por fecha: error", "bad");
+        } else {
+          setRtPill("rtCostos", "Costos por fecha: " + status, "warn");
+        }
+      });
+  }
+
+  function procesarNotasPorCobrar(){
+    const map = new Map();
+    const vista = modoVistaSel();
+
+    const notasMap = new Map();
+    for(const nota of notasCerradas){
+      notasMap.set(nota.id, nota);
+    }
+
+    for(const row of notasDetalle){
+      const nota = notasMap.get(row.nota_id);
+      if(!nota) continue;
+
+      if(vista === "vdc"){
+        if(!notaEsClienteNormal(nota)) continue;
+      } else if(vista === "carniceria"){
+        if(!notaEsCarniceria(nota)) continue;
+      }
+
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!map.has(prod)){
+        map.set(prod, {
+          producto: prod,
+          kilos: 0,
+          pzas: 0,
+          importe: 0
+        });
+      }
+
+      const o = map.get(prod);
+      o.kilos += num(row.cantidad);
+      o.pzas += num(row.piezas);
+    }
+
+    const modo = $("#modoPrecioVenta").value || "preferir_guardado";
+
+    const rows = PRODUCTOS_ORDEN.map(producto=>{
+      const r = map.get(producto) || {
+        producto,
+        kilos:0,
+        pzas:0,
+        importe:0
+      };
+
+      const precioBase = getPrecioVentaBase(producto);
+      const precioGuardado = getPrecioVentaGuardado(producto);
+
+      let precioVenta = 0;
+      if(modo === "preferir_guardado"){
+        precioVenta = precioGuardado > 0 ? precioGuardado : precioBase;
+      } else {
+        precioVenta = precioBase > 0 ? precioBase : precioGuardado;
+      }
+
+      const precioVisual = getPrecioUnitarioVisual(producto, precioVenta);
+      const importeCalculado = calcularImportePorProducto(producto, r.kilos, r.pzas, precioVenta);
+
+      return {
+        producto,
+        kilos:r.kilos,
+        pzas:r.pzas,
+        importe:importeCalculado,
+        precioPromedio:precioVisual,
+        precioVentaReal:precioVenta
+      };
+    });
+
+    tablaPorCobrarRows = rows.filter(r=>r.kilos > 0 || r.importe > 0 || r.pzas > 0);
+    return rows;
+  }
+
+  function procesarCobradoMostrador(){
+    const vista = modoVistaSel();
+
+    if(vista === "carniceria"){
+      const rows = PRODUCTOS_ORDEN.map(producto=>({
+        producto,
+        enviadoKg: 0,
+        devueltoKg: 0,
+        cobradoKg: 0
+      }));
+
+      tablaCobradoRows = rows.filter(r=>r.enviadoKg !== 0 || r.devueltoKg !== 0 || r.cobradoKg !== 0);
+      return rows;
+    }
+
+    const enviadosMap = new Map();
+    const devueltosMap = new Map();
+
+    for(const row of mostradorEnviados){
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!enviadosMap.has(prod)){
+        enviadosMap.set(prod, { producto:prod, enviadoKg:0, devueltoKg:0, cobradoKg:0 });
+      }
+      enviadosMap.get(prod).enviadoKg += num(row.kilos);
+    }
+
+    for(const row of mostradorDevueltos){
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!devueltosMap.has(prod)){
+        devueltosMap.set(prod, { producto:prod, devueltoKg:0 });
+      }
+      devueltosMap.get(prod).devueltoKg += num(row.kilos);
+    }
+
+    const notasMap = new Map();
+    for(const nota of notasCerradas){
+      notasMap.set(nota.id, nota);
+    }
+
+    const ventaBodegaMap = new Map();
+
+    for(const row of notasDetalle){
+      const nota = notasMap.get(row.nota_id);
+      if(!nota) continue;
+
+      if(!notaEsVentaBodega(nota)) continue;
+
+      const prod = canonProducto(row.producto);
+      if(!prod) continue;
+
+      if(!ventaBodegaMap.has(prod)){
+        ventaBodegaMap.set(prod, { producto:prod, kilos:0 });
+      }
+
+      ventaBodegaMap.get(prod).kilos += num(row.cantidad);
+    }
+
+    const rows = PRODUCTOS_ORDEN.map(producto=>{
+      const env = enviadosMap.get(producto)?.enviadoKg || 0;
+      const dev = devueltosMap.get(producto)?.devueltoKg || 0;
+      const vb = ventaBodegaMap.get(producto)?.kilos || 0;
+
+      return {
+        producto,
+        enviadoKg: env,
+        devueltoKg: dev,
+        cobradoKg: (env - dev) + vb
+      };
+    });
+
+    tablaCobradoRows = rows.filter(r=>r.enviadoKg !== 0 || r.devueltoKg !== 0 || r.cobradoKg !== 0);
+    return rows;
+  }
+
+  function procesarTablaMaster(){
+    const porCobrar = procesarNotasPorCobrar();
+    const cobrado = procesarCobradoMostrador();
+    const modo = $("#modoPrecioVenta").value || "preferir_guardado";
+
+    const rows = PRODUCTOS_ORDEN.map(producto=>{
+      const rNotas = porCobrar.find(x=>x.producto === producto) || {};
+      const rMost = cobrado.find(x=>x.producto === producto) || {};
+
+      const precioBase = getPrecioVentaBase(producto);
+      const precioVentaGuardado = getPrecioVentaGuardado(producto);
+
+      let precioVenta = 0;
+      if(modo === "preferir_guardado"){
+        precioVenta = precioVentaGuardado > 0 ? precioVentaGuardado : precioBase;
+      } else {
+        precioVenta = precioBase > 0 ? precioBase : precioVentaGuardado;
+      }
+
+      const precioCompra = getPrecioCompraFinal(producto);
+      const gananciaPorKg = precioVenta - precioCompra;
+
+      const cobradoKg = num(rMost.cobradoKg);
+      const porCobrarKg = num(rNotas.kilos);
+      const porCobrarPzas = num(rNotas.pzas);
+      const netoKg = cobradoKg + porCobrarKg;
+
+      const ingresoCobrado = esProductoPrecioPorCaja(producto)
+        ? (cobradoKg / KG_POR_CAJA_COMPLETA) * precioVenta
+        : cobradoKg * precioVenta;
+
+      const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVenta);
+      const ventaTotal = ingresoCobrado + ingresoPorCobrar;
+
+      const gananciaCobrado = gananciaPorKg * cobradoKg;
+      const gananciaPorCobrar = gananciaPorKg * porCobrarKg;
+      const utilidadEstimada = gananciaCobrado + gananciaPorCobrar;
+
+      return {
+        producto,
+        precioVenta,
+        precioCompra,
+        gananciaPorKg,
+        compraAuto: (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0),
+        cobradoKg,
+        porCobrarKg,
+        porCobrarPzas,
+        netoKg,
+        ingresoCobrado,
+        ingresoPorCobrar,
+        ventaTotal,
+        gananciaCobrado,
+        gananciaPorCobrar,
+        utilidadEstimada
+      };
+    });
+
+    tablaMasterRows = rows;
+    return rows;
+  }
+
+  function renderTablaPorCobrar(){
+    const q = norm($("#buscarProducto").value || "");
+    const tbody = $("#tablaPorCobrar tbody");
+
+    const rows = tablaPorCobrarRows.filter(r=>{
+      if(!q) return true;
+      return norm(r.producto).includes(q);
+    });
+
+    tbody.innerHTML = rows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.producto)}</td>
+        <td>${fmtKg(r.kilos)}</td>
+        <td>${fmtNum(r.pzas)}</td>
+        <td>${fmtMoney(r.precioPromedio)}</td>
+        <td>${fmtMoney(r.importe)}</td>
+      </tr>
+    `).join("");
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="5" class="muted">Sin movimientos para esta vista y fecha.</td></tr>`;
+    }
+  }
+
+  function renderTablaCobrado(){
+    const q = norm($("#buscarProducto").value || "");
+    const tbody = $("#tablaCobrado tbody");
+
+    const rows = tablaCobradoRows.filter(r=>{
+      if(!q) return true;
+      return norm(r.producto).includes(q);
+    });
+
+    tbody.innerHTML = rows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.producto)}</td>
+        <td>${fmtKg(r.enviadoKg)}</td>
+        <td>${fmtKg(r.devueltoKg)}</td>
+        <td>${fmtKg(r.cobradoKg)}</td>
+      </tr>
+    `).join("");
+
+    if(!rows.length){
+      tbody.innerHTML = `<tr><td colspan="4" class="muted">Sin movimientos cobrados para esta vista y fecha.</td></tr>`;
+    }
+  }
+
+  function renderTablaMaster(){
+    const q = norm($("#buscarProducto").value || "");
+    const tbody = $("#tablaMaster tbody");
+
+    const rows = tablaMasterRows.filter(r=>{
+      if(!q) return true;
+      return norm(r.producto).includes(q);
+    });
+
+    tbody.innerHTML = rows.length ? rows.map(r=>{
+      const utilidadClass = r.utilidadEstimada >= 0 ? "good" : "bad";
+      const margenClass = r.gananciaPorKg >= 0 ? "good" : "bad";
+
+      const compraCell = r.compraAuto
+        ? `<input class="cellReadonly" type="text" value="${Number(r.precioCompra || 0).toFixed(2)}" readonly />`
+        : `<input
+            class="cellNum"
+            type="number"
+            step="0.01"
+            value="${Number(r.precioCompra || 0).toFixed(2)}"
+            onchange="setPrecioGlobal('${escapeHtml(r.producto)}','compra', this.value)"
+          />`;
+
+      return `
+        <tr>
+          <td>${escapeHtml(r.producto)}</td>
+          <td>
+            <input
+              class="cellNum"
+              type="number"
+              step="0.01"
+              value="${Number(r.precioVenta || 0).toFixed(2)}"
+              onchange="setPrecioGlobal('${escapeHtml(r.producto)}','venta', this.value)"
+            />
+          </td>
+          <td>${compraCell}</td>
+          <td class="${margenClass}">${fmtMoney(r.gananciaPorKg)}</td>
+          <td>${fmtKg(r.cobradoKg)}</td>
+          <td>${fmtKg(r.porCobrarKg)}</td>
+          <td>${fmtKg(r.netoKg)}</td>
+          <td>${fmtMoney(r.ingresoCobrado)}</td>
+          <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+          <td>${fmtMoney(r.ventaTotal)}</td>
+          <td class="${utilidadClass}">${fmtMoney(r.utilidadEstimada)}</td>
+        </tr>
+      `;
+    }).join("") : `<tr><td colspan="11" class="muted">No hay productos para mostrar con ese filtro.</td></tr>`;
+  }
+
+  function renderStats(){
+    const totalCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
+    const totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
+    const totalVenta = totalCobrado + totalPorCobrar;
+    const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
+
+    const totalGananciaCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaCobrado), 0);
+    const totalGananciaPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaPorCobrar), 0);
+    const totalUtilidad = totalGananciaCobrado + totalGananciaPorCobrar;
+
+    $("#statCobrado").textContent = fmtMoney(totalCobrado);
+    $("#statGananciaCobrado").textContent = fmtMoney(totalGananciaCobrado);
+    $("#statPorCobrar").textContent = fmtMoney(totalPorCobrar);
+    $("#statGananciaPorCobrar").textContent = fmtMoney(totalGananciaPorCobrar);
+    $("#statVentaTotal").textContent = fmtMoney(totalVenta);
+    $("#statKgNetos").textContent = `${fmtKg(totalKg)} kg`;
+    $("#statUtilidad").textContent = fmtMoney(totalUtilidad);
+
+    $("#statGananciaCobrado").classList.remove("good","bad");
+    $("#statGananciaPorCobrar").classList.remove("good","bad");
+    $("#statUtilidad").classList.remove("good","bad");
+
+    $("#statGananciaCobrado").classList.add(totalGananciaCobrado >= 0 ? "good" : "bad");
+    $("#statGananciaPorCobrar").classList.add(totalGananciaPorCobrar >= 0 ? "good" : "bad");
+    $("#statUtilidad").classList.add(totalUtilidad >= 0 ? "good" : "bad");
+  }
+
+  function procesarTodo(){
+    actualizarTextosVista();
+    procesarTablaMaster();
+    renderTablaPorCobrar();
+    renderTablaCobrado();
+    renderTablaMaster();
+    renderStats();
+  }
+
+  function exportCSV(){
+    const head = [
+      "Producto",
+      "Precio venta",
+      "Precio compra",
+      "Ganancia por kg",
+      "Cobrado kg",
+      "Por cobrar kg",
+      "Neto kg",
+      "Ingreso cobrado",
+      "Ingreso por cobrar",
+      "Venta total",
+      "Ganancia estimada"
+    ];
+
+    const rows = tablaMasterRows.map(r=>[
+      r.producto,
+      Number(r.precioVenta || 0).toFixed(2),
+      Number(r.precioCompra || 0).toFixed(2),
+      Number(r.gananciaPorKg || 0).toFixed(2),
+      Number(r.cobradoKg || 0).toFixed(2),
+      Number(r.porCobrarKg || 0).toFixed(2),
+      Number(r.netoKg || 0).toFixed(2),
+      Number(r.ingresoCobrado || 0).toFixed(2),
+      Number(r.ingresoPorCobrar || 0).toFixed(2),
+      Number(r.ventaTotal || 0).toFixed(2),
+      Number(r.utilidadEstimada || 0).toFixed(2)
+    ]);
+
+    const csv = [head, ...rows]
+      .map(r => r.map(csvEscape).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `total_ventas_${modoVistaSel()}_${fechaSel()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function recargarTodo(){
+    loadPreciosDia();
+    await cargarCostoPromedioFecha();
+    await cargarNotas();
+    await cargarMostrador();
+    procesarTodo();
+  }
+
+  async function reiniciarRealtime(){
+    await conectarRealtimeNotas();
+    await conectarRealtimeMostrador();
+    await conectarRealtimeCostos();
+  }
+
+  async function cambiarFecha(){
+    loadPreciosDia();
+    await recargarTodo();
+    await reiniciarRealtime();
+  }
+
+  $("#fecha").addEventListener("change", cambiarFecha);
+  $("#modoVista").addEventListener("change", async ()=>{
+    loadPreciosDia();
+    procesarTodo();
+  });
+  $("#btnRecargar").addEventListener("click", recargarTodo);
+  $("#btnCSV").addEventListener("click", exportCSV);
+  $("#buscarProducto").addEventListener("input", ()=>{
+    renderTablaPorCobrar();
+    renderTablaCobrado();
+    renderTablaMaster();
+  });
+  $("#modoPrecioVenta").addEventListener("change", procesarTodo);
+
+  $("#btnLimpiarPrecios").addEventListener("click", ()=>{
+    if(!confirm("¿Limpiar los precios guardados de esta fecha y esta vista?")) return;
+    localStorage.removeItem(storageKey());
+    loadPreciosDia();
+    procesarTodo();
+  });
+
+  window.setPrecioGlobal = function(producto, campo, valor){
+    if(campo === "compra"){
+      if(PRECIOS_COMPRA_FIJOS[producto] != null) return;
+      if(puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0) return;
+    }
+    setPrecio(producto, campo, valor);
+  };
+
+  window.addEventListener("storage", (e)=>{
+    if(e.key === storageKey()){
+      loadPreciosDia();
+      procesarTodo();
+    }
+  });
+
+  async function init(){
+    $("#fecha").value = todayISO();
+    $("#modoVista").value = "vdc";
+    loadPreciosDia();
+    await recargarTodo();
+    await reiniciarRealtime();
+  }
+
+  init();
+</script>
+</body>
+</html>
