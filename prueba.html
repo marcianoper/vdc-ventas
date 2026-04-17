@@ -1162,7 +1162,35 @@
   }
 
   function getCostoFinalProducto(producto){
-    return num(costosFinalesPorProducto[producto]?.costo_final || 0);
+    const directo = num(costosFinalesPorProducto[producto]?.costo_final || 0);
+    if(directo > 0) return directo;
+
+    if(
+      producto === "Cabeza Congelada" ||
+      producto === "Cabeza Sin Lengua"
+    ){
+      const cabezaBase = num(costosFinalesPorProducto["Cabeza"]?.costo_final || 0);
+      if(cabezaBase > 0) return cabezaBase;
+    }
+
+    if(
+      producto === "Pata Sucia" ||
+      producto === "Pata Blanca" ||
+      producto === "Pata Morena"
+    ){
+      let pataBase = num(costosFinalesPorProducto["Pata"]?.costo_final || 0);
+
+      if(pataBase === 0){
+        pataBase =
+          num(costosFinalesPorProducto["Pata Blanca"]?.costo_final || 0) ||
+          num(costosFinalesPorProducto["Pata Morena"]?.costo_final || 0) ||
+          num(costosFinalesPorProducto["Pata Sucia"]?.costo_final || 0);
+      }
+
+      if(pataBase > 0) return pataBase;
+    }
+
+    return 0;
   }
 
   function getPrecioCompraFinal(producto){
