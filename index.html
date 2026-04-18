@@ -438,7 +438,7 @@
           Esta página toma:
           <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
           <b>cobrado</b> desde el <b>mostrador neto</b> del día
-          y <b>precio de compra</b> desde el <b>costo promedio por kg guardado por fecha</b>.
+          y <b>precio de compra</b> desde el <b>costo final por producto guardado por fecha</b>.
         </p>
       </div>
     </div>
@@ -475,8 +475,9 @@
 
     <div class="note" id="notaExplicativa">
       Los <b>precios de venta</b> se pueden ajustar por día.
-      Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
-      excepto productos excluidos, cajas y productos de rastro.  
+      Los <b>precios de compra</b> se llenan automáticamente con el <b>costo final por producto</b> guardado para la fecha seleccionada.
+      Si no existe ese dato, cae al comportamiento de respaldo:
+      costo fijo, costo promedio global o precio guardado/default.  
       <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
       En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
@@ -647,6 +648,7 @@
   const sbResumen = window.supabase.createClient(RESUMEN_URL, RESUMEN_KEY);
 
   const COSTOS_PROMEDIO_TABLE = "costos_promedio_por_fecha";
+  const COSTOS_FINALES_TABLE = "costos_finales_por_producto";
 
   const PRODUCTOS_ORDEN = [
     "Bofe",
@@ -811,6 +813,7 @@
   let mostradorEnvChannel = null;
   let mostradorDevChannel = null;
   let costosPromedioChannel = null;
+  let costosFinalesChannel = null;
 
   let notasCerradas = [];
   let notasDetalle = [];
@@ -819,6 +822,7 @@
 
   let preciosDia = {};
   let costosAutoDia = {};
+  let costosFinalesPorProducto = {};
   let tablaMasterRows = [];
   let tablaPorCobrarRows = [];
   let tablaCobradoRows = [];
@@ -1041,6 +1045,7 @@
       $("#notaExplicativa").innerHTML = `
         En <b>Carnicería VDC</b>, la columna de <b>por cobrar</b> representa los kilos y el importe de las
         <b>notas cerradas del cliente Carnicería</b>. La parte de <b>cobrado</b> queda en cero para no mezclar esta vista con mostrador.
+        El <b>precio de compra</b> intenta llenar desde <b>costos finales por producto</b> de la fecha seleccionada.
       `;
       $("#textoResumenDia").textContent = "Resumen aislado de Carnicería VDC con base en notas cerradas del día.";
       $("#statCobradoDesc").textContent = "En esta vista el cobrado se mantiene en cero para no mezclar con mostrador.";
@@ -1061,12 +1066,13 @@
         Esta página toma:
         <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
         <b>cobrado</b> desde el <b>mostrador neto</b> del día
-        y <b>precio de compra</b> desde el <b>costo promedio por kg guardado por fecha</b>.
+        y <b>precio de compra</b> desde el <b>costo final por producto guardado por fecha</b>.
       `;
       $("#notaExplicativa").innerHTML = `
         Los <b>precios de venta</b> se pueden ajustar por día.
-        Los <b>precios de compra</b> se llenan automáticamente con el <b>costo promedio</b> guardado para la fecha seleccionada,
-        excepto productos excluidos, cajas y productos de rastro.  
+        Los <b>precios de compra</b> se llenan automáticamente con el <b>costo final por producto</b> guardado para la fecha seleccionada.
+        Si no existe ese dato, cae al comportamiento de respaldo:
+        costo fijo, costo promedio global o precio guardado/default.  
         <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
         En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
         <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
@@ -1113,15 +1119,86 @@
         costosAutoDia[producto] = costoPromedioFechaSeleccionada;
       }
     }
+  }
 
-    if(costoPromedioFechaSeleccionada > 0){
-      setRtPill("rtCostos", `Costos por fecha: ${costoPromedioFechaSeleccionada.toFixed(2)}`, "ok");
+  async function cargarCostosFinalesFecha(){
+    const fecha = fechaSel();
+
+    const { data, error } = await sbResumen
+      .from(COSTOS_FINALES_TABLE)
+      .select("fecha, producto, costo_final, costo_operativo, precio_base, kg")
+      .eq("fecha", fecha);
+
+    if(error){
+      console.error("Error costos_finales_por_producto:", error);
+      costosFinalesPorProducto = {};
+      if(costoPromedioFechaSeleccionada > 0){
+        setRtPill("rtCostos", `Costos por fecha: prom ${costoPromedioFechaSeleccionada.toFixed(2)}`, "warn");
+      } else {
+        setRtPill("rtCostos", "Costos por fecha: sin dato", "warn");
+      }
+      return;
+    }
+
+    const map = {};
+    for(const row of (data || [])){
+      const prod = canonProducto(row.producto) || row.producto;
+      map[prod] = {
+        costo_final: num(row.costo_final),
+        costo_operativo: num(row.costo_operativo),
+        precio_base: num(row.precio_base),
+        kg: num(row.kg)
+      };
+    }
+    costosFinalesPorProducto = map;
+
+    if(Object.keys(costosFinalesPorProducto).length > 0){
+      setRtPill("rtCostos", `Costos por fecha: ${Object.keys(costosFinalesPorProducto).length} productos`, "ok");
+    } else if(costoPromedioFechaSeleccionada > 0){
+      setRtPill("rtCostos", `Costos por fecha: prom ${costoPromedioFechaSeleccionada.toFixed(2)}`, "warn");
     } else {
       setRtPill("rtCostos", "Costos por fecha: sin dato", "warn");
     }
   }
 
+  function getCostoFinalProducto(producto){
+    const directo = num(costosFinalesPorProducto[producto]?.costo_final || 0);
+    if(directo > 0) return directo;
+
+    if(
+      producto === "Cabeza Congelada" ||
+      producto === "Cabeza Sin Lengua"
+    ){
+      const cabezaBase = num(costosFinalesPorProducto["Cabeza"]?.costo_final || 0);
+      if(cabezaBase > 0) return cabezaBase;
+    }
+
+    if(
+      producto === "Pata Sucia" ||
+      producto === "Pata Blanca" ||
+      producto === "Pata Morena"
+    ){
+      let pataBase = num(costosFinalesPorProducto["Pata"]?.costo_final || 0);
+
+      if(pataBase === 0){
+        pataBase =
+          num(costosFinalesPorProducto["Pata Blanca"]?.costo_final || 0) ||
+          num(costosFinalesPorProducto["Pata Morena"]?.costo_final || 0) ||
+          num(costosFinalesPorProducto["Pata Sucia"]?.costo_final || 0);
+      }
+
+      if(pataBase > 0) return pataBase;
+    }
+
+    return 0;
+  }
+
   function getPrecioCompraFinal(producto){
+    const costoFinalProducto = getCostoFinalProducto(producto);
+    if(costoFinalProducto > 0){
+      return costoFinalProducto;
+    }
+
     if(PRECIOS_COMPRA_FIJOS[producto] != null){
       return num(PRECIOS_COMPRA_FIJOS[producto]);
     }
@@ -1293,30 +1370,39 @@
       try{ await sbResumen.removeChannel(costosPromedioChannel); }catch(e){}
       costosPromedioChannel = null;
     }
+    if(costosFinalesChannel){
+      try{ await sbResumen.removeChannel(costosFinalesChannel); }catch(e){}
+      costosFinalesChannel = null;
+    }
 
     const fecha = fechaSel();
 
     costosPromedioChannel = sbResumen
-      .channel(`tv-costos-${fecha}`)
+      .channel(`tv-costos-promedio-${fecha}`)
       .on(
         "postgres_changes",
         { event:"*", schema:"public", table:COSTOS_PROMEDIO_TABLE, filter:`fecha=eq.${fecha}` },
         async ()=>{
           await cargarCostoPromedioFecha();
+          await cargarCostosFinalesFecha();
+          procesarTodo();
+        }
+      )
+      .subscribe();
+
+    costosFinalesChannel = sbResumen
+      .channel(`tv-costos-finales-${fecha}`)
+      .on(
+        "postgres_changes",
+        { event:"*", schema:"public", table:COSTOS_FINALES_TABLE, filter:`fecha=eq.${fecha}` },
+        async ()=>{
+          await cargarCostosFinalesFecha();
           procesarTodo();
         }
       )
       .subscribe((status)=>{
-        if(status === "SUBSCRIBED"){
-          if(costoPromedioFechaSeleccionada > 0){
-            setRtPill("rtCostos", `Costos por fecha: ${costoPromedioFechaSeleccionada.toFixed(2)}`, "ok");
-          } else {
-            setRtPill("rtCostos", "Costos por fecha: conectado", "warn");
-          }
-        } else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT"){
+        if(status === "CHANNEL_ERROR" || status === "TIMED_OUT"){
           setRtPill("rtCostos", "Costos por fecha: error", "bad");
-        } else {
-          setRtPill("rtCostos", "Costos por fecha: " + status, "warn");
         }
       });
   }
@@ -1515,7 +1601,7 @@
         precioVenta,
         precioCompra,
         gananciaPorKg,
-        compraAuto: (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0),
+        compraAuto: (getCostoFinalProducto(producto) > 0) || (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0),
         cobradoKg,
         porCobrarKg,
         porCobrarPzas,
@@ -1710,6 +1796,7 @@
   async function recargarTodo(){
     loadPreciosDia();
     await cargarCostoPromedioFecha();
+    await cargarCostosFinalesFecha();
     await cargarNotas();
     await cargarMostrador();
     procesarTodo();
@@ -1750,6 +1837,7 @@
 
   window.setPrecioGlobal = function(producto, campo, valor){
     if(campo === "compra"){
+      if(getCostoFinalProducto(producto) > 0) return;
       if(PRECIOS_COMPRA_FIJOS[producto] != null) return;
       if(puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0) return;
     }
