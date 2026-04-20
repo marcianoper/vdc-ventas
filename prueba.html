@@ -309,16 +309,6 @@
       line-height:1.35;
     }
 
-    .grid2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-    }
-
-    @media (max-width:980px){
-      .grid2{ grid-template-columns:1fr; }
-    }
-
     .tableWrap{
       overflow:auto;
       border-radius:18px;
@@ -371,19 +361,6 @@
       text-align:right;
     }
 
-    .cellReadonly{
-      width:110px;
-      padding:8px 10px;
-      border:1px solid rgba(229,231,235,.95);
-      border-radius:12px;
-      font-weight:900;
-      background:#f8fafc;
-      box-shadow:none;
-      margin:0;
-      text-align:right;
-      color:#0f172a;
-    }
-
     .muted{
       color:var(--muted);
       font-weight:800;
@@ -399,7 +376,6 @@
 
     .good{ color:var(--brand); }
     .bad{ color:var(--danger); }
-    .warnTxt{ color:var(--warn); }
 
     footer{
       text-align:center;
@@ -419,7 +395,7 @@
         <div class="logo">VDC</div>
         <div class="title">
           <b>Total de Ventas por Rango — VDC 360°</b>
-          <span id="subtituloVista">Resumen detallado por día, por producto y acumulado del periodo</span>
+          <span>Resumen detallado por día, por producto y acumulado del periodo</span>
         </div>
       </div>
 
@@ -440,7 +416,7 @@
       <div>
         <h2>Filtro del periodo</h2>
         <p>
-          Aquí puedes consultar desde un día hasta varios días. El sistema te mostrará:
+          Consulta desde un día hasta varios días. El sistema te mostrará:
           <b>resumen diario</b>, <b>detalle por producto por día</b> y <b>acumulado total del rango</b>.
         </p>
       </div>
@@ -482,10 +458,9 @@
     </div>
 
     <div class="note">
-      <b>Importante:</b> este módulo calcula muy bien el detalle <b>por fecha</b> y <b>por producto</b>.
-      Si quieres ver el costo exacto de <b>cada viaje individual</b>, hay que conectarlo también con la
-      tabla de <b>hoja de viaje / viajes</b> o una tabla que guarde costos por viaje.
-      Con lo que hoy tienes conectado, este módulo trabaja a nivel <b>día</b>.
+      Las <b>cajas completas</b> (<b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>) se capturan con
+      <b>precio real por caja</b>, pero el sistema convierte internamente ese valor a <b>precio por kg equivalente</b>
+      para calcular margen, costo y utilidad correctamente.
     </div>
   </section>
 
@@ -531,7 +506,7 @@
       <div class="stat">
         <div class="k">Costo estimado</div>
         <div class="v" id="statCostoTotal">$0.00</div>
-        <div class="s">Costo estimado total de producto vendido.</div>
+        <div class="s">Costo estimado total del producto vendido.</div>
       </div>
 
       <div class="stat">
@@ -552,10 +527,7 @@
     <div class="cardHead">
       <div>
         <h2>Resumen por día</h2>
-        <p>
-          Aquí ves cada día individualmente:
-          kilos, cobrado, por cobrar, venta total, costo estimado y utilidad.
-        </p>
+        <p>Vista diaria del comportamiento del negocio.</p>
       </div>
     </div>
 
@@ -585,10 +557,7 @@
     <div class="cardHead">
       <div>
         <h2>Detalle por producto y por día</h2>
-        <p>
-          Este es el análisis fino:
-          <b>cada producto en cada día</b>, con precio de venta, costo, kilos, ingresos y utilidad.
-        </p>
+        <p>Análisis fino por fecha y producto.</p>
       </div>
     </div>
 
@@ -620,9 +589,7 @@
     <div class="cardHead">
       <div>
         <h2>Acumulado por producto del rango</h2>
-        <p>
-          Aquí se suma todo el periodo seleccionado por producto.
-        </p>
+        <p>Suma total del periodo seleccionado por producto.</p>
       </div>
     </div>
 
@@ -649,10 +616,8 @@
     </div>
 
     <div class="note">
-      <b>Ganancia por kg</b> = <b>precio de venta - precio de compra</b>.<br>
-      <b>Costo estimado</b> = <b>neto kg × precio compra</b>.<br>
-      <b>Utilidad estimada</b> = <b>venta total - costo estimado</b>.<br>
-      En <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, el ingreso de notas se calcula por <b>piezas</b>.
+      <b>Ganancia por kg</b> = <b>precio venta por kg equivalente - precio compra por kg equivalente</b>.<br>
+      En <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, el precio editable se conserva <b>por caja completa</b>.
     </div>
   </section>
 
@@ -1020,6 +985,20 @@
     return num(kilos) * num(precioVenta);
   }
 
+  function getPrecioVentaPorKg(producto, precioVentaReal){
+    if(esProductoPrecioPorCaja(producto)){
+      return KG_POR_CAJA_COMPLETA > 0 ? (num(precioVentaReal) / KG_POR_CAJA_COMPLETA) : 0;
+    }
+    return num(precioVentaReal);
+  }
+
+  function getPrecioCompraPorKg(producto, precioCompraReal){
+    if(esProductoPrecioPorCaja(producto)){
+      return KG_POR_CAJA_COMPLETA > 0 ? (num(precioCompraReal) / KG_POR_CAJA_COMPLETA) : 0;
+    }
+    return num(precioCompraReal);
+  }
+
   function puedeUsarCostoPromedioGlobal(producto){
     if(PRECIOS_COMPRA_FIJOS[producto] != null) return false;
     if(esCaja(producto)) return false;
@@ -1331,11 +1310,14 @@
       for(const producto of PRODUCTOS_ORDEN){
         const precioBase = getPrecioVentaBase(producto);
         const precioGuardado = getPrecioVentaGuardado(producto);
-        const precioVenta = modo === "preferir_guardado"
+
+        const precioVentaReal = modo === "preferir_guardado"
           ? (precioGuardado > 0 ? precioGuardado : precioBase)
           : (precioBase > 0 ? precioBase : precioGuardado);
 
-        const precioCompra = getPrecioCompraFinalPorFecha(producto, fecha, costosPromedioIndex, costosFinalesIndex);
+        const precioCompraReal = getPrecioCompraFinalPorFecha(producto, fecha, costosPromedioIndex, costosFinalesIndex);
+        const precioVenta = getPrecioVentaPorKg(producto, precioVentaReal);
+        const precioCompra = getPrecioCompraPorKg(producto, precioCompraReal);
         const gananciaPorKg = precioVenta - precioCompra;
 
         const notaInfo = detalleNotasPorFechaYProducto[fecha]?.[producto] || { kilos:0, pzas:0 };
@@ -1349,10 +1331,10 @@
         const netoKg = cobradoKg + porCobrarKg;
 
         const ingresoCobrado = esProductoPrecioPorCaja(producto)
-          ? (cobradoKg / KG_POR_CAJA_COMPLETA) * precioVenta
-          : cobradoKg * precioVenta;
+          ? (cobradoKg / KG_POR_CAJA_COMPLETA) * precioVentaReal
+          : cobradoKg * precioVentaReal;
 
-        const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVenta);
+        const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVentaReal);
         const ventaTotal = ingresoCobrado + ingresoPorCobrar;
         const costoEstimado = netoKg * precioCompra;
         const utilidadCobrada = cobradoKg * gananciaPorKg;
@@ -1374,6 +1356,8 @@
           producto,
           precioVenta,
           precioCompra,
+          precioVentaReal,
+          precioCompraReal,
           gananciaPorKg,
           cobradoKg,
           porCobrarKg,
@@ -1392,6 +1376,8 @@
             producto,
             precioVenta,
             precioCompra,
+            precioVentaReal,
+            precioCompraReal,
             gananciaPorKg,
             cobradoKg:0,
             porCobrarKg:0,
@@ -1407,6 +1393,8 @@
         const acc = acumuladoMap.get(producto);
         acc.precioVenta = precioVenta;
         acc.precioCompra = precioCompra;
+        acc.precioVentaReal = precioVentaReal;
+        acc.precioCompraReal = precioCompraReal;
         acc.gananciaPorKg = precioVenta - precioCompra;
         acc.cobradoKg += cobradoKg;
         acc.porCobrarKg += porCobrarKg;
@@ -1500,38 +1488,43 @@
 
   function renderAcumuladoProducto(){
     const tbody = $("#tablaAcumuladoProducto tbody");
-    tbody.innerHTML = acumuladoProductoRows.length ? acumuladoProductoRows.map(r=>`
-      <tr>
-        <td>${escapeHtml(r.producto)}</td>
-        <td>
-          <input
-            class="cellNum"
-            type="number"
-            step="0.01"
-            value="${Number(r.precioVenta || 0).toFixed(2)}"
-            onchange="setPrecioGlobal('${escapeHtml(r.producto)}','venta', this.value)"
-          />
-        </td>
-        <td>
-          <input
-            class="cellNum"
-            type="number"
-            step="0.01"
-            value="${Number(r.precioCompra || 0).toFixed(2)}"
-            onchange="setPrecioGlobal('${escapeHtml(r.producto)}','compra', this.value)"
-          />
-        </td>
-        <td class="${r.gananciaPorKg >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaPorKg)}</td>
-        <td>${fmtKg(r.cobradoKg)}</td>
-        <td>${fmtKg(r.porCobrarKg)}</td>
-        <td>${fmtKg(r.netoKg)}</td>
-        <td>${fmtMoney(r.ingresoCobrado)}</td>
-        <td>${fmtMoney(r.ingresoPorCobrar)}</td>
-        <td>${fmtMoney(r.ventaTotal)}</td>
-        <td>${fmtMoney(r.costoEstimado)}</td>
-        <td class="${r.utilidadEstimada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadEstimada)}</td>
-      </tr>
-    `).join("") : `<tr><td colspan="12" class="muted">No hay acumulado para mostrar.</td></tr>`;
+    tbody.innerHTML = acumuladoProductoRows.length ? acumuladoProductoRows.map(r=>{
+      const ventaEditable = esProductoPrecioPorCaja(r.producto) ? r.precioVentaReal : r.precioVenta;
+      const compraEditable = esProductoPrecioPorCaja(r.producto) ? r.precioCompraReal : r.precioCompra;
+
+      return `
+        <tr>
+          <td>${escapeHtml(r.producto)}</td>
+          <td>
+            <input
+              class="cellNum"
+              type="number"
+              step="0.01"
+              value="${Number(ventaEditable || 0).toFixed(2)}"
+              onchange="setPrecioGlobal('${escapeHtml(r.producto)}','venta', this.value)"
+            />
+          </td>
+          <td>
+            <input
+              class="cellNum"
+              type="number"
+              step="0.01"
+              value="${Number(compraEditable || 0).toFixed(2)}"
+              onchange="setPrecioGlobal('${escapeHtml(r.producto)}','compra', this.value)"
+            />
+          </td>
+          <td class="${r.gananciaPorKg >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaPorKg)}</td>
+          <td>${fmtKg(r.cobradoKg)}</td>
+          <td>${fmtKg(r.porCobrarKg)}</td>
+          <td>${fmtKg(r.netoKg)}</td>
+          <td>${fmtMoney(r.ingresoCobrado)}</td>
+          <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+          <td>${fmtMoney(r.ventaTotal)}</td>
+          <td>${fmtMoney(r.costoEstimado)}</td>
+          <td class="${r.utilidadEstimada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadEstimada)}</td>
+        </tr>
+      `;
+    }).join("") : `<tr><td colspan="12" class="muted">No hay acumulado para mostrar.</td></tr>`;
   }
 
   function renderStats(){
@@ -1582,7 +1575,7 @@
 
   function exportCSVDetalle(){
     const head = [
-      "Fecha","Producto","Precio venta","Precio compra","Ganancia por kg","Cobrado kg","Por cobrar kg",
+      "Fecha","Producto","Precio venta kg eq","Precio compra kg eq","Ganancia por kg","Cobrado kg","Por cobrar kg",
       "Neto kg","Ingreso cobrado","Ingreso por cobrar","Venta total","Costo estimado","Utilidad estimada"
     ];
     const rows = detalleDiaProductoRows.map(r=>[
