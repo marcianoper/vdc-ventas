@@ -495,25 +495,25 @@
 
     <div class="stats">
       <div class="stat">
-        <div class="k">Cobrado real</div>
+        <div class="k">Cobrado</div>
         <div class="v" id="statCobrado">$0.00</div>
-        <div class="s" id="statCobradoDesc">Ingreso cobrado menos costo de compra del producto cobrado.</div>
+        <div class="s" id="statCobradoDesc">Venta cobrada menos utilidad cobrada.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Ganancia cobrada</div>
+        <div class="k">Utilidad cobrada</div>
         <div class="v" id="statGananciaCobrado">$0.00</div>
-        <div class="s">Utilidad estimada solo del producto ya cobrado.</div>
+        <div class="s">Utilidad estimada del producto ya cobrado.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Cuentas por cobrar reales</div>
+        <div class="k">Cuentas por cobrar</div>
         <div class="v" id="statPorCobrar">$0.00</div>
-        <div class="s" id="statPorCobrarDesc">Ingreso por cobrar menos costo de compra del producto vendido a crédito.</div>
+        <div class="s" id="statPorCobrarDesc">Venta por cobrar menos utilidad por cobrar.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Ganancia por cobrar</div>
+        <div class="k">Utilidad por cobrar</div>
         <div class="v" id="statGananciaPorCobrar">$0.00</div>
         <div class="s">Utilidad estimada del producto vendido a crédito.</div>
       </div>
@@ -623,8 +623,8 @@
     <div class="note">
       <b>Ganancia por kg</b> = <b>precio de venta - precio de compra</b>.<br>
       <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.<br>
-      <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
-      <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
+      <b>Utilidad cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
+      <b>Utilidad por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
       En las <b>notas a crédito</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto para
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, que se valúan por <b>piezas</b>.
     </div>
@@ -1048,8 +1048,8 @@
         El <b>precio de compra</b> intenta llenar desde <b>costos finales por producto</b> de la fecha seleccionada.
       `;
       $("#textoResumenDia").textContent = "Resumen aislado de Carnicería VDC con base en notas cerradas del día.";
-      $("#statCobradoDesc").textContent = "En esta vista el cobrado real se mantiene en cero para no mezclar con mostrador.";
-      $("#statPorCobrarDesc").textContent = "Ganancia real pendiente del cliente Carnicería: venta menos costo.";
+      $("#statCobradoDesc").textContent = "En esta vista el cobrado se mantiene en cero para no mezclar con mostrador.";
+      $("#statPorCobrarDesc").textContent = "Venta por cobrar menos utilidad por cobrar del cliente Carnicería.";
       $("#tituloPorCobrar").textContent = "Detalle: Carnicería VDC";
       $("#textoPorCobrar").textContent = "Notas a crédito cerradas del cliente Carnicería, agrupadas por producto.";
       $("#tituloCobrado").textContent = "Detalle: cobrado";
@@ -1079,8 +1079,8 @@
         de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
       `;
       $("#textoResumenDia").textContent = "Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.";
-      $("#statCobradoDesc").textContent = "Ganancia real cobrada: ingreso cobrado menos costo de compra.";
-      $("#statPorCobrarDesc").textContent = "Ganancia real por cobrar: ingreso por cobrar menos costo de compra.";
+      $("#statCobradoDesc").textContent = "Venta cobrada menos utilidad cobrada.";
+      $("#statPorCobrarDesc").textContent = "Venta por cobrar menos utilidad por cobrar.";
       $("#tituloPorCobrar").textContent = "Detalle: cuentas por cobrar";
       $("#textoPorCobrar").textContent = "Notas a crédito cerradas del día, agrupadas por producto.";
       $("#tituloCobrado").textContent = "Detalle: cobrado";
@@ -1718,17 +1718,21 @@
   function renderStats(){
     const totalIngresoCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
     const totalIngresoPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
-    const totalVenta = totalIngresoCobrado + totalIngresoPorCobrar;
-    const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
 
     const totalGananciaCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaCobrado), 0);
     const totalGananciaPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaPorCobrar), 0);
+
+    const totalVenta = totalIngresoCobrado + totalIngresoPorCobrar;
+    const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
     const totalUtilidad = totalGananciaCobrado + totalGananciaPorCobrar;
 
-    $("#statCobrado").textContent = fmtMoney(totalGananciaCobrado);
+    const cobradoReal = totalIngresoCobrado - totalGananciaCobrado;
+    const porCobrarReal = totalIngresoPorCobrar - totalGananciaPorCobrar;
+
+    $("#statCobrado").textContent = fmtMoney(cobradoReal);
     $("#statGananciaCobrado").textContent = fmtMoney(totalGananciaCobrado);
 
-    $("#statPorCobrar").textContent = fmtMoney(totalGananciaPorCobrar);
+    $("#statPorCobrar").textContent = fmtMoney(porCobrarReal);
     $("#statGananciaPorCobrar").textContent = fmtMoney(totalGananciaPorCobrar);
 
     $("#statVentaTotal").textContent = fmtMoney(totalVenta);
@@ -1741,8 +1745,8 @@
     $("#statGananciaPorCobrar").classList.remove("good","bad");
     $("#statUtilidad").classList.remove("good","bad");
 
-    $("#statCobrado").classList.add(totalGananciaCobrado >= 0 ? "good" : "bad");
-    $("#statPorCobrar").classList.add(totalGananciaPorCobrar >= 0 ? "good" : "bad");
+    $("#statCobrado").classList.add(cobradoReal >= 0 ? "good" : "bad");
+    $("#statPorCobrar").classList.add(porCobrarReal >= 0 ? "good" : "bad");
     $("#statGananciaCobrado").classList.add(totalGananciaCobrado >= 0 ? "good" : "bad");
     $("#statGananciaPorCobrar").classList.add(totalGananciaPorCobrar >= 0 ? "good" : "bad");
     $("#statUtilidad").classList.add(totalUtilidad >= 0 ? "good" : "bad");
