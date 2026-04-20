@@ -477,7 +477,7 @@
       Los <b>precios de venta</b> se pueden ajustar por día.
       Los <b>precios de compra</b> se llenan automáticamente con el <b>costo final por producto</b> guardado para la fecha seleccionada.
       Si no existe ese dato, cae al comportamiento de respaldo:
-      costo fijo, costo promedio global o precio guardado/default.  
+      costo fijo, costo promedio global o precio guardado/default.
       <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
       En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
@@ -497,23 +497,23 @@
       <div class="stat">
         <div class="k">Cobrado</div>
         <div class="v" id="statCobrado">$0.00</div>
-        <div class="s" id="statCobradoDesc">Venta cobrada menos utilidad cobrada.</div>
+        <div class="s" id="statCobradoDesc">Mostrador neto del día valuado con precio de venta + Venta Bodega.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Utilidad cobrada</div>
+        <div class="k">Ganancia cobrada</div>
         <div class="v" id="statGananciaCobrado">$0.00</div>
-        <div class="s">Utilidad estimada del producto ya cobrado.</div>
+        <div class="s">Utilidad estimada solo del producto ya cobrado.</div>
       </div>
 
       <div class="stat">
         <div class="k">Cuentas por cobrar</div>
         <div class="v" id="statPorCobrar">$0.00</div>
-        <div class="s" id="statPorCobrarDesc">Venta por cobrar menos utilidad por cobrar.</div>
+        <div class="s" id="statPorCobrarDesc">Notas a crédito cerradas del día valuadas con precio de venta.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Utilidad por cobrar</div>
+        <div class="k">Ganancia por cobrar</div>
         <div class="v" id="statGananciaPorCobrar">$0.00</div>
         <div class="s">Utilidad estimada del producto vendido a crédito.</div>
       </div>
@@ -623,8 +623,8 @@
     <div class="note">
       <b>Ganancia por kg</b> = <b>precio de venta - precio de compra</b>.<br>
       <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.<br>
-      <b>Utilidad cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
-      <b>Utilidad por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
+      <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
+      <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
       En las <b>notas a crédito</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto para
       <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, que se valúan por <b>piezas</b>.
     </div>
@@ -1049,7 +1049,7 @@
       `;
       $("#textoResumenDia").textContent = "Resumen aislado de Carnicería VDC con base en notas cerradas del día.";
       $("#statCobradoDesc").textContent = "En esta vista el cobrado se mantiene en cero para no mezclar con mostrador.";
-      $("#statPorCobrarDesc").textContent = "Venta por cobrar menos utilidad por cobrar del cliente Carnicería.";
+      $("#statPorCobrarDesc").textContent = "Notas cerradas del cliente Carnicería valuadas con precio de venta.";
       $("#tituloPorCobrar").textContent = "Detalle: Carnicería VDC";
       $("#textoPorCobrar").textContent = "Notas a crédito cerradas del cliente Carnicería, agrupadas por producto.";
       $("#tituloCobrado").textContent = "Detalle: cobrado";
@@ -1072,15 +1072,15 @@
         Los <b>precios de venta</b> se pueden ajustar por día.
         Los <b>precios de compra</b> se llenan automáticamente con el <b>costo final por producto</b> guardado para la fecha seleccionada.
         Si no existe ese dato, cae al comportamiento de respaldo:
-        costo fijo, costo promedio global o precio guardado/default.  
+        costo fijo, costo promedio global o precio guardado/default.
         <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
         En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
         <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
         de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
       `;
       $("#textoResumenDia").textContent = "Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.";
-      $("#statCobradoDesc").textContent = "Venta cobrada menos utilidad cobrada.";
-      $("#statPorCobrarDesc").textContent = "Venta por cobrar menos utilidad por cobrar.";
+      $("#statCobradoDesc").textContent = "Mostrador neto del día valuado con precio de venta + Venta Bodega.";
+      $("#statPorCobrarDesc").textContent = "Notas a crédito cerradas del día de clientes normales valuadas con precio de venta.";
       $("#tituloPorCobrar").textContent = "Detalle: cuentas por cobrar";
       $("#textoPorCobrar").textContent = "Notas a crédito cerradas del día, agrupadas por producto.";
       $("#tituloCobrado").textContent = "Detalle: cobrado";
@@ -1716,37 +1716,27 @@
   }
 
   function renderStats(){
-    const totalIngresoCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
-    const totalIngresoPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
+    const totalCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
+    const totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
+    const totalVenta = totalCobrado + totalPorCobrar;
+    const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
 
     const totalGananciaCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaCobrado), 0);
     const totalGananciaPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaPorCobrar), 0);
-
-    const totalVenta = totalIngresoCobrado + totalIngresoPorCobrar;
-    const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
     const totalUtilidad = totalGananciaCobrado + totalGananciaPorCobrar;
 
-    const cobradoReal = totalIngresoCobrado - totalGananciaCobrado;
-    const porCobrarReal = totalIngresoPorCobrar - totalGananciaPorCobrar;
-
-    $("#statCobrado").textContent = fmtMoney(cobradoReal);
+    $("#statCobrado").textContent = fmtMoney(totalCobrado);
     $("#statGananciaCobrado").textContent = fmtMoney(totalGananciaCobrado);
-
-    $("#statPorCobrar").textContent = fmtMoney(porCobrarReal);
+    $("#statPorCobrar").textContent = fmtMoney(totalPorCobrar);
     $("#statGananciaPorCobrar").textContent = fmtMoney(totalGananciaPorCobrar);
-
     $("#statVentaTotal").textContent = fmtMoney(totalVenta);
     $("#statKgNetos").textContent = `${fmtKg(totalKg)} kg`;
     $("#statUtilidad").textContent = fmtMoney(totalUtilidad);
 
-    $("#statCobrado").classList.remove("good","bad");
-    $("#statPorCobrar").classList.remove("good","bad");
     $("#statGananciaCobrado").classList.remove("good","bad");
     $("#statGananciaPorCobrar").classList.remove("good","bad");
     $("#statUtilidad").classList.remove("good","bad");
 
-    $("#statCobrado").classList.add(cobradoReal >= 0 ? "good" : "bad");
-    $("#statPorCobrar").classList.add(porCobrarReal >= 0 ? "good" : "bad");
     $("#statGananciaCobrado").classList.add(totalGananciaCobrado >= 0 ? "good" : "bad");
     $("#statGananciaPorCobrar").classList.add(totalGananciaPorCobrar >= 0 ? "good" : "bad");
     $("#statUtilidad").classList.add(totalUtilidad >= 0 ? "good" : "bad");
