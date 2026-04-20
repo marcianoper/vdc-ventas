@@ -32,7 +32,7 @@
         var(--bg);
     }
 
-    .wrap{ max-width:1600px; margin:0 auto; padding:0 16px; }
+    .wrap{ max-width:1680px; margin:0 auto; padding:0 16px; }
 
     header{
       position:sticky;
@@ -262,12 +262,12 @@
 
     .stats{
       display:grid;
-      grid-template-columns: repeat(8, minmax(170px, 1fr));
+      grid-template-columns: repeat(10, minmax(170px, 1fr));
       gap:12px;
     }
 
-    @media (max-width:1450px){
-      .stats{ grid-template-columns: repeat(4, minmax(170px, 1fr)); }
+    @media (max-width:1700px){
+      .stats{ grid-template-columns: repeat(5, minmax(170px, 1fr)); }
     }
 
     @media (max-width:980px){
@@ -320,7 +320,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1220px;
+      min-width:1700px;
     }
 
     th, td{
@@ -468,7 +468,7 @@
     <div class="cardHead">
       <div>
         <h2>Resumen acumulado del rango</h2>
-        <p>Acumulado total del periodo seleccionado.</p>
+        <p>Ahora separado en ingreso, costo y ganancia real para cobrado y por cobrar.</p>
       </div>
     </div>
 
@@ -482,13 +482,37 @@
       <div class="stat">
         <div class="k">Cobrado</div>
         <div class="v" id="statCobrado">$0.00</div>
-        <div class="s">Mostrador neto + Venta Bodega.</div>
+        <div class="s">Ingreso cobrado.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Costo cobrado</div>
+        <div class="v" id="statCostoCobrado">$0.00</div>
+        <div class="s">Costo del producto ya cobrado.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Ganancia real cobrada</div>
+        <div class="v" id="statGananciaRealCobrada">$0.00</div>
+        <div class="s">Cobrado - costo cobrado.</div>
       </div>
 
       <div class="stat">
         <div class="k">Por cobrar</div>
         <div class="v" id="statPorCobrar">$0.00</div>
-        <div class="s">Notas cerradas del periodo.</div>
+        <div class="s">Ingreso por cobrar.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Costo por cobrar</div>
+        <div class="v" id="statCostoPorCobrar">$0.00</div>
+        <div class="s">Costo del producto por cobrar.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Ganancia real por cobrar</div>
+        <div class="v" id="statGananciaRealPorCobrar">$0.00</div>
+        <div class="s">Por cobrar - costo por cobrar.</div>
       </div>
 
       <div class="stat">
@@ -498,27 +522,41 @@
       </div>
 
       <div class="stat">
+        <div class="k">Costo total</div>
+        <div class="v" id="statCostoTotal">$0.00</div>
+        <div class="s">Costo total del periodo.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Ganancia real total</div>
+        <div class="v" id="statGananciaRealTotal">$0.00</div>
+        <div class="s">Ganancia real final en pesos.</div>
+      </div>
+    </div>
+
+    <div class="stats" style="margin-top:12px">
+      <div class="stat">
         <div class="k">Kilos netos</div>
         <div class="v" id="statKgNetos">0.00 kg</div>
         <div class="s">Suma de kilos cobrados y por cobrar.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Costo estimado</div>
-        <div class="v" id="statCostoTotal">$0.00</div>
-        <div class="s">Costo estimado total del producto vendido.</div>
+        <div class="k">Utilidad cobrada</div>
+        <div class="v" id="statUtilidadCobrada">$0.00</div>
+        <div class="s">Margen teórico sobre lo cobrado.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Utilidad cobrada</div>
-        <div class="v" id="statUtilidadCobrada">$0.00</div>
-        <div class="s">Utilidad solo de lo ya cobrado.</div>
+        <div class="k">Utilidad por cobrar</div>
+        <div class="v" id="statUtilidadPorCobrar">$0.00</div>
+        <div class="s">Margen teórico sobre lo por cobrar.</div>
       </div>
 
       <div class="stat">
         <div class="k">Utilidad total</div>
         <div class="v" id="statUtilidadTotal">$0.00</div>
-        <div class="s">Utilidad estimada del periodo completo.</div>
+        <div class="s">Margen teórico total.</div>
       </div>
     </div>
   </section>
@@ -527,7 +565,7 @@
     <div class="cardHead">
       <div>
         <h2>Resumen por día</h2>
-        <p>Vista diaria del comportamiento del negocio.</p>
+        <p>Ya separado con costo y ganancia real cobrada / por cobrar.</p>
       </div>
     </div>
 
@@ -541,11 +579,14 @@
             <th>Por cobrar kg</th>
             <th>Neto kg</th>
             <th>Ingreso cobrado</th>
+            <th>Costo cobrado</th>
+            <th>Ganancia real cobrada</th>
             <th>Ingreso por cobrar</th>
+            <th>Costo por cobrar</th>
+            <th>Ganancia real por cobrar</th>
             <th>Venta total</th>
-            <th>Costo estimado</th>
-            <th>Utilidad cobrada</th>
-            <th>Utilidad total</th>
+            <th>Costo total</th>
+            <th>Ganancia real total</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -557,7 +598,7 @@
     <div class="cardHead">
       <div>
         <h2>Detalle por producto y por día</h2>
-        <p>Análisis fino por fecha y producto.</p>
+        <p>Análisis fino por fecha y producto, ya con ganancia real en pesos.</p>
       </div>
     </div>
 
@@ -574,10 +615,14 @@
             <th>Por cobrar kg</th>
             <th>Neto kg</th>
             <th>Ingreso cobrado</th>
+            <th>Costo cobrado</th>
+            <th>Ganancia real cobrada</th>
             <th>Ingreso por cobrar</th>
+            <th>Costo por cobrar</th>
+            <th>Ganancia real por cobrar</th>
             <th>Venta total</th>
-            <th>Costo estimado</th>
-            <th>Utilidad estimada</th>
+            <th>Costo total</th>
+            <th>Ganancia real total</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -605,10 +650,14 @@
             <th>Por cobrar kg</th>
             <th>Neto kg</th>
             <th>Ingreso cobrado</th>
+            <th>Costo cobrado</th>
+            <th>Ganancia real cobrada</th>
             <th>Ingreso por cobrar</th>
+            <th>Costo por cobrar</th>
+            <th>Ganancia real por cobrar</th>
             <th>Venta total</th>
-            <th>Costo estimado</th>
-            <th>Utilidad estimada</th>
+            <th>Costo total</th>
+            <th>Ganancia real total</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -616,8 +665,9 @@
     </div>
 
     <div class="note">
-      <b>Ganancia por kg</b> = <b>precio venta por kg equivalente - precio compra por kg equivalente</b>.<br>
-      En <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, el precio editable se conserva <b>por caja completa</b>.
+      <b>Ganancia real cobrada</b> = <b>ingreso cobrado - costo cobrado</b>.<br>
+      <b>Ganancia real por cobrar</b> = <b>ingreso por cobrar - costo por cobrar</b>.<br>
+      <b>Ganancia real total</b> = <b>ganancia real cobrada + ganancia real por cobrar</b>.
     </div>
   </section>
 
@@ -642,105 +692,31 @@
   const COSTOS_FINALES_TABLE = "costos_finales_por_producto";
 
   const PRODUCTOS_ORDEN = [
-    "Bofe",
-    "Bofe Completo",
-    "Cabeza",
-    "Cabeza Congelada",
-    "Cabeza De Rastro",
-    "Cabeza Sin Lengua",
-    "Caja Libro Visceras",
-    "Caja Menudo Canadian",
-    "Caja Menudo Canadian X KG",
-    "Caja Menudo National",
-    "Caja Menudo National X KG",
-    "Caja Menudo Visceras Del Centro",
-    "Caja Menudo Washington",
-    "Corazon",
-    "Cuajo",
-    "Sebo",
-    "Higado",
-    "Hueso",
-    "Lengua",
-    "Libro",
-    "Menudo Sucio",
-    "Panza de Res",
-    "Pata Blanca",
-    "Pata Morena",
-    "Pata Sucia",
-    "PT",
-    "Teleco",
-    "Tripa",
-    "Tripa de Rastro",
-    "Tripa Gorda",
-    "Sebo2"
+    "Bofe","Bofe Completo","Cabeza","Cabeza Congelada","Cabeza De Rastro","Cabeza Sin Lengua",
+    "Caja Libro Visceras","Caja Menudo Canadian","Caja Menudo Canadian X KG","Caja Menudo National",
+    "Caja Menudo National X KG","Caja Menudo Visceras Del Centro","Caja Menudo Washington",
+    "Corazon","Cuajo","Sebo","Higado","Hueso","Lengua","Libro","Menudo Sucio","Panza de Res",
+    "Pata Blanca","Pata Morena","Pata Sucia","PT","Teleco","Tripa","Tripa de Rastro","Tripa Gorda","Sebo2"
   ];
 
   const PRECIOS_VENTA_DEFAULT = {
-    "Bofe": 20.00,
-    "Bofe Completo": 25.00,
-    "Cabeza": 56.00,
-    "Cabeza Congelada": 60.00,
-    "Cabeza De Rastro": 60.00,
-    "Cabeza Sin Lengua": 51.00,
-    "Caja Libro Visceras": 80.00,
-    "Caja Menudo Canadian": 2900.00,
-    "Caja Menudo Canadian X KG": 109.00,
-    "Caja Menudo National": 2900.00,
-    "Caja Menudo National X KG": 109.00,
-    "Caja Menudo Visceras Del Centro": 80.00,
-    "Caja Menudo Washington": 106.00,
-    "Corazon": 30.00,
-    "Cuajo": 48.00,
-    "Sebo": 12.00,
-    "Higado": 25.00,
-    "Hueso": 2.00,
-    "Lengua": 230.00,
-    "Libro": 70.00,
-    "Menudo Sucio": 38.00,
-    "Panza de Res": 60.00,
-    "Pata Blanca": 70.00,
-    "Pata Morena": 60.00,
-    "Pata Sucia": 38.00,
-    "PT": 25.00,
-    "Teleco": 57.00,
-    "Tripa": 45.00,
-    "Tripa de Rastro": 54.00,
-    "Tripa Gorda": 41.00,
-    "Sebo2": 9.00
+    "Bofe": 20.00,"Bofe Completo": 25.00,"Cabeza": 56.00,"Cabeza Congelada": 60.00,"Cabeza De Rastro": 60.00,
+    "Cabeza Sin Lengua": 51.00,"Caja Libro Visceras": 80.00,"Caja Menudo Canadian": 2900.00,
+    "Caja Menudo Canadian X KG": 109.00,"Caja Menudo National": 2900.00,"Caja Menudo National X KG": 109.00,
+    "Caja Menudo Visceras Del Centro": 80.00,"Caja Menudo Washington": 106.00,"Corazon": 30.00,"Cuajo": 48.00,
+    "Sebo": 12.00,"Higado": 25.00,"Hueso": 2.00,"Lengua": 230.00,"Libro": 70.00,"Menudo Sucio": 38.00,
+    "Panza de Res": 60.00,"Pata Blanca": 70.00,"Pata Morena": 60.00,"Pata Sucia": 38.00,"PT": 25.00,
+    "Teleco": 57.00,"Tripa": 45.00,"Tripa de Rastro": 54.00,"Tripa Gorda": 41.00,"Sebo2": 9.00
   };
 
   const PRECIOS_COMPRA_DEFAULT = {
-    "Bofe": 0,
-    "Bofe Completo": 0,
-    "Cabeza": 36.13,
-    "Cabeza Congelada": 36.13,
-    "Cabeza De Rastro": 46.00,
-    "Cabeza Sin Lengua": 36.13,
-    "Caja Libro Visceras": 40.00,
-    "Caja Menudo Canadian": 2613.00,
-    "Caja Menudo Canadian X KG": 96.00,
-    "Caja Menudo National": 2613.00,
-    "Caja Menudo National X KG": 96.00,
-    "Caja Menudo Visceras Del Centro": 40.00,
-    "Caja Menudo Washington": 96.00,
-    "Corazon": 36.13,
-    "Cuajo": 36.13,
-    "Sebo": 0,
-    "Higado": 0,
-    "Hueso": 0,
-    "Lengua": 36.13,
-    "Libro": 36.13,
-    "Menudo Sucio": 36.13,
-    "Panza de Res": 36.13,
-    "Pata Blanca": 36.13,
-    "Pata Morena": 36.13,
-    "Pata Sucia": 36.13,
-    "PT": 0,
-    "Teleco": 36.13,
-    "Tripa": 36.13,
-    "Tripa de Rastro": 45.00,
-    "Tripa Gorda": 36.13,
-    "Sebo2": 0
+    "Bofe": 0,"Bofe Completo": 0,"Cabeza": 36.13,"Cabeza Congelada": 36.13,"Cabeza De Rastro": 46.00,
+    "Cabeza Sin Lengua": 36.13,"Caja Libro Visceras": 40.00,"Caja Menudo Canadian": 2613.00,
+    "Caja Menudo Canadian X KG": 96.00,"Caja Menudo National": 2613.00,"Caja Menudo National X KG": 96.00,
+    "Caja Menudo Visceras Del Centro": 40.00,"Caja Menudo Washington": 96.00,"Corazon": 36.13,"Cuajo": 36.13,
+    "Sebo": 0,"Higado": 0,"Hueso": 0,"Lengua": 36.13,"Libro": 36.13,"Menudo Sucio": 36.13,
+    "Panza de Res": 36.13,"Pata Blanca": 36.13,"Pata Morena": 36.13,"Pata Sucia": 36.13,"PT": 0,
+    "Teleco": 36.13,"Tripa": 36.13,"Tripa de Rastro": 45.00,"Tripa Gorda": 36.13,"Sebo2": 0
   };
 
   const PRECIOS_COMPRA_FIJOS = {
@@ -756,13 +732,7 @@
   ]);
 
   const PRODUCTOS_EXCLUIDOS_COSTO_AUTO = new Set([
-    "Higado",
-    "Hueso",
-    "PT",
-    "Bofe",
-    "Sebo",
-    "Sebo2",
-    "Lengua"
+    "Higado","Hueso","PT","Bofe","Sebo","Sebo2","Lengua"
   ]);
 
   const ALIAS = {
@@ -1301,10 +1271,21 @@
       let productosConMovimiento = 0;
       let totalCobradoKg = 0;
       let totalPorCobrarKg = 0;
+
       let totalIngresoCobrado = 0;
+      let totalCostoCobrado = 0;
+      let totalGananciaRealCobrada = 0;
+
       let totalIngresoPorCobrar = 0;
+      let totalCostoPorCobrar = 0;
+      let totalGananciaRealPorCobrar = 0;
+
+      let totalVenta = 0;
       let totalCosto = 0;
+      let totalGananciaReal = 0;
+
       let totalUtilidadCobrada = 0;
+      let totalUtilidadPorCobrar = 0;
       let totalUtilidad = 0;
 
       for(const producto of PRODUCTOS_ORDEN){
@@ -1335,21 +1316,42 @@
           : cobradoKg * precioVentaReal;
 
         const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVentaReal);
-        const ventaTotal = ingresoCobrado + ingresoPorCobrar;
-        const costoEstimado = netoKg * precioCompra;
+
+        const costoCobrado = cobradoKg * precioCompra;
+        const costoPorCobrar = porCobrarKg * precioCompra;
+        const costoTotal = costoCobrado + costoPorCobrar;
+
+        const gananciaRealCobrada = ingresoCobrado - costoCobrado;
+        const gananciaRealPorCobrar = ingresoPorCobrar - costoPorCobrar;
+        const gananciaRealTotal = gananciaRealCobrada + gananciaRealPorCobrar;
+
         const utilidadCobrada = cobradoKg * gananciaPorKg;
-        const utilidadEstimada = ventaTotal - costoEstimado;
+        const utilidadPorCobrar = porCobrarKg * gananciaPorKg;
+        const utilidadTotal = utilidadCobrada + utilidadPorCobrar;
+
+        const ventaTotal = ingresoCobrado + ingresoPorCobrar;
 
         const tuvoMovimiento = Math.abs(cobradoKg) > 0 || Math.abs(porCobrarKg) > 0 || Math.abs(porCobrarPzas) > 0;
         if(tuvoMovimiento) productosConMovimiento++;
 
         totalCobradoKg += cobradoKg;
         totalPorCobrarKg += porCobrarKg;
+
         totalIngresoCobrado += ingresoCobrado;
+        totalCostoCobrado += costoCobrado;
+        totalGananciaRealCobrada += gananciaRealCobrada;
+
         totalIngresoPorCobrar += ingresoPorCobrar;
-        totalCosto += costoEstimado;
+        totalCostoPorCobrar += costoPorCobrar;
+        totalGananciaRealPorCobrar += gananciaRealPorCobrar;
+
+        totalVenta += ventaTotal;
+        totalCosto += costoTotal;
+        totalGananciaReal += gananciaRealTotal;
+
         totalUtilidadCobrada += utilidadCobrada;
-        totalUtilidad += utilidadEstimada;
+        totalUtilidadPorCobrar += utilidadPorCobrar;
+        totalUtilidad += utilidadTotal;
 
         const det = {
           fecha,
@@ -1363,10 +1365,17 @@
           porCobrarKg,
           netoKg,
           ingresoCobrado,
+          costoCobrado,
+          gananciaRealCobrada,
           ingresoPorCobrar,
+          costoPorCobrar,
+          gananciaRealPorCobrar,
           ventaTotal,
-          costoEstimado,
-          utilidadEstimada
+          costoTotal,
+          gananciaRealTotal,
+          utilidadCobrada,
+          utilidadPorCobrar,
+          utilidadTotal
         };
 
         detalleRows.push(det);
@@ -1383,10 +1392,17 @@
             porCobrarKg:0,
             netoKg:0,
             ingresoCobrado:0,
+            costoCobrado:0,
+            gananciaRealCobrada:0,
             ingresoPorCobrar:0,
+            costoPorCobrar:0,
+            gananciaRealPorCobrar:0,
             ventaTotal:0,
-            costoEstimado:0,
-            utilidadEstimada:0
+            costoTotal:0,
+            gananciaRealTotal:0,
+            utilidadCobrada:0,
+            utilidadPorCobrar:0,
+            utilidadTotal:0
           });
         }
 
@@ -1400,10 +1416,17 @@
         acc.porCobrarKg += porCobrarKg;
         acc.netoKg += netoKg;
         acc.ingresoCobrado += ingresoCobrado;
+        acc.costoCobrado += costoCobrado;
+        acc.gananciaRealCobrada += gananciaRealCobrada;
         acc.ingresoPorCobrar += ingresoPorCobrar;
+        acc.costoPorCobrar += costoPorCobrar;
+        acc.gananciaRealPorCobrar += gananciaRealPorCobrar;
         acc.ventaTotal += ventaTotal;
-        acc.costoEstimado += costoEstimado;
-        acc.utilidadEstimada += utilidadEstimada;
+        acc.costoTotal += costoTotal;
+        acc.gananciaRealTotal += gananciaRealTotal;
+        acc.utilidadCobrada += utilidadCobrada;
+        acc.utilidadPorCobrar += utilidadPorCobrar;
+        acc.utilidadTotal += utilidadTotal;
       }
 
       resumenDia.push({
@@ -1412,16 +1435,26 @@
         cobradoKg: totalCobradoKg,
         porCobrarKg: totalPorCobrarKg,
         netoKg: totalCobradoKg + totalPorCobrarKg,
+
         ingresoCobrado: totalIngresoCobrado,
+        costoCobrado: totalCostoCobrado,
+        gananciaRealCobrada: totalGananciaRealCobrada,
+
         ingresoPorCobrar: totalIngresoPorCobrar,
-        ventaTotal: totalIngresoCobrado + totalIngresoPorCobrar,
-        costoEstimado: totalCosto,
+        costoPorCobrar: totalCostoPorCobrar,
+        gananciaRealPorCobrar: totalGananciaRealPorCobrar,
+
+        ventaTotal: totalVenta,
+        costoTotal: totalCosto,
+        gananciaRealTotal: totalGananciaReal,
+
         utilidadCobrada: totalUtilidadCobrada,
+        utilidadPorCobrar: totalUtilidadPorCobrar,
         utilidadTotal: totalUtilidad
       });
     }
 
-    detalleDiaProductoRows = detalleRows.filter(r => {
+    detalleDiaProductoRows = detalleRows.filter(r=>{
       if(q && !norm(r.producto).includes(q)) return false;
       return Math.abs(r.cobradoKg) > 0 || Math.abs(r.porCobrarKg) > 0 || Math.abs(r.ventaTotal) > 0;
     });
@@ -1435,7 +1468,7 @@
     acumuladoProductoRows = PRODUCTOS_ORDEN
       .map(p => acumuladoMap.get(p))
       .filter(Boolean)
-      .filter(r => {
+      .filter(r=>{
         if(q && !norm(r.producto).includes(q)) return false;
         return Math.abs(r.cobradoKg) > 0 || Math.abs(r.porCobrarKg) > 0 || Math.abs(r.ventaTotal) > 0;
       });
@@ -1456,13 +1489,16 @@
         <td>${fmtKg(r.porCobrarKg)}</td>
         <td>${fmtKg(r.netoKg)}</td>
         <td>${fmtMoney(r.ingresoCobrado)}</td>
+        <td>${fmtMoney(r.costoCobrado)}</td>
+        <td class="${r.gananciaRealCobrada >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealCobrada)}</td>
         <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+        <td>${fmtMoney(r.costoPorCobrar)}</td>
+        <td class="${r.gananciaRealPorCobrar >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealPorCobrar)}</td>
         <td>${fmtMoney(r.ventaTotal)}</td>
-        <td>${fmtMoney(r.costoEstimado)}</td>
-        <td class="${r.utilidadCobrada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadCobrada)}</td>
-        <td class="${r.utilidadTotal >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadTotal)}</td>
+        <td>${fmtMoney(r.costoTotal)}</td>
+        <td class="${r.gananciaRealTotal >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealTotal)}</td>
       </tr>
-    `).join("") : `<tr><td colspan="11" class="muted">Sin movimientos en el rango seleccionado.</td></tr>`;
+    `).join("") : `<tr><td colspan="14" class="muted">Sin movimientos en el rango seleccionado.</td></tr>`;
   }
 
   function renderDetalleDiaProducto(){
@@ -1478,12 +1514,16 @@
         <td>${fmtKg(r.porCobrarKg)}</td>
         <td>${fmtKg(r.netoKg)}</td>
         <td>${fmtMoney(r.ingresoCobrado)}</td>
+        <td>${fmtMoney(r.costoCobrado)}</td>
+        <td class="${r.gananciaRealCobrada >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealCobrada)}</td>
         <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+        <td>${fmtMoney(r.costoPorCobrar)}</td>
+        <td class="${r.gananciaRealPorCobrar >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealPorCobrar)}</td>
         <td>${fmtMoney(r.ventaTotal)}</td>
-        <td>${fmtMoney(r.costoEstimado)}</td>
-        <td class="${r.utilidadEstimada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadEstimada)}</td>
+        <td>${fmtMoney(r.costoTotal)}</td>
+        <td class="${r.gananciaRealTotal >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealTotal)}</td>
       </tr>
-    `).join("") : `<tr><td colspan="13" class="muted">Sin detalle para mostrar.</td></tr>`;
+    `).join("") : `<tr><td colspan="17" class="muted">Sin detalle para mostrar.</td></tr>`;
   }
 
   function renderAcumuladoProducto(){
@@ -1518,44 +1558,78 @@
           <td>${fmtKg(r.porCobrarKg)}</td>
           <td>${fmtKg(r.netoKg)}</td>
           <td>${fmtMoney(r.ingresoCobrado)}</td>
+          <td>${fmtMoney(r.costoCobrado)}</td>
+          <td class="${r.gananciaRealCobrada >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealCobrada)}</td>
           <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+          <td>${fmtMoney(r.costoPorCobrar)}</td>
+          <td class="${r.gananciaRealPorCobrar >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealPorCobrar)}</td>
           <td>${fmtMoney(r.ventaTotal)}</td>
-          <td>${fmtMoney(r.costoEstimado)}</td>
-          <td class="${r.utilidadEstimada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadEstimada)}</td>
+          <td>${fmtMoney(r.costoTotal)}</td>
+          <td class="${r.gananciaRealTotal >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealTotal)}</td>
         </tr>
       `;
-    }).join("") : `<tr><td colspan="12" class="muted">No hay acumulado para mostrar.</td></tr>`;
+    }).join("") : `<tr><td colspan="16" class="muted">No hay acumulado para mostrar.</td></tr>`;
   }
 
   function renderStats(){
     const dias = resumenPorDiaRows.length;
+
     const cobrado = resumenPorDiaRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
+    const costoCobrado = resumenPorDiaRows.reduce((a,b)=>a + num(b.costoCobrado), 0);
+    const gananciaRealCobrada = resumenPorDiaRows.reduce((a,b)=>a + num(b.gananciaRealCobrada), 0);
+
     const porCobrar = resumenPorDiaRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
+    const costoPorCobrar = resumenPorDiaRows.reduce((a,b)=>a + num(b.costoPorCobrar), 0);
+    const gananciaRealPorCobrar = resumenPorDiaRows.reduce((a,b)=>a + num(b.gananciaRealPorCobrar), 0);
+
     const ventaTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.ventaTotal), 0);
+    const costoTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.costoTotal), 0);
+    const gananciaRealTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.gananciaRealTotal), 0);
+
     const kgNetos = resumenPorDiaRows.reduce((a,b)=>a + num(b.netoKg), 0);
-    const costoTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.costoEstimado), 0);
+
     const utilidadCobrada = resumenPorDiaRows.reduce((a,b)=>a + num(b.utilidadCobrada), 0);
+    const utilidadPorCobrar = resumenPorDiaRows.reduce((a,b)=>a + num(b.utilidadPorCobrar), 0);
     const utilidadTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.utilidadTotal), 0);
 
     $("#statDias").textContent = fmtNum(dias);
+
     $("#statCobrado").textContent = fmtMoney(cobrado);
+    $("#statCostoCobrado").textContent = fmtMoney(costoCobrado);
+    $("#statGananciaRealCobrada").textContent = fmtMoney(gananciaRealCobrada);
+
     $("#statPorCobrar").textContent = fmtMoney(porCobrar);
+    $("#statCostoPorCobrar").textContent = fmtMoney(costoPorCobrar);
+    $("#statGananciaRealPorCobrar").textContent = fmtMoney(gananciaRealPorCobrar);
+
     $("#statVentaTotal").textContent = fmtMoney(ventaTotal);
-    $("#statKgNetos").textContent = `${fmtKg(kgNetos)} kg`;
     $("#statCostoTotal").textContent = fmtMoney(costoTotal);
+    $("#statGananciaRealTotal").textContent = fmtMoney(gananciaRealTotal);
+
+    $("#statKgNetos").textContent = `${fmtKg(kgNetos)} kg`;
     $("#statUtilidadCobrada").textContent = fmtMoney(utilidadCobrada);
+    $("#statUtilidadPorCobrar").textContent = fmtMoney(utilidadPorCobrar);
     $("#statUtilidadTotal").textContent = fmtMoney(utilidadTotal);
 
-    $("#statUtilidadCobrada").classList.remove("good","bad");
-    $("#statUtilidadTotal").classList.remove("good","bad");
-    $("#statUtilidadCobrada").classList.add(utilidadCobrada >= 0 ? "good" : "bad");
-    $("#statUtilidadTotal").classList.add(utilidadTotal >= 0 ? "good" : "bad");
+    [
+      "#statGananciaRealCobrada",
+      "#statGananciaRealPorCobrar",
+      "#statGananciaRealTotal",
+      "#statUtilidadCobrada",
+      "#statUtilidadPorCobrar",
+      "#statUtilidadTotal"
+    ].forEach(sel=>{
+      $(sel).classList.remove("good","bad");
+      $(sel).classList.add(num($(sel).textContent.replace(/[^0-9.-]/g,'')) >= 0 ? "good" : "bad");
+    });
   }
 
   function exportCSVResumen(){
     const head = [
       "Fecha","Productos con movimiento","Cobrado kg","Por cobrar kg","Neto kg",
-      "Ingreso cobrado","Ingreso por cobrar","Venta total","Costo estimado","Utilidad cobrada","Utilidad total"
+      "Ingreso cobrado","Costo cobrado","Ganancia real cobrada",
+      "Ingreso por cobrar","Costo por cobrar","Ganancia real por cobrar",
+      "Venta total","Costo total","Ganancia real total"
     ];
     const rows = resumenPorDiaRows.map(r=>[
       r.fecha,
@@ -1564,19 +1638,25 @@
       Number(r.porCobrarKg || 0).toFixed(2),
       Number(r.netoKg || 0).toFixed(2),
       Number(r.ingresoCobrado || 0).toFixed(2),
+      Number(r.costoCobrado || 0).toFixed(2),
+      Number(r.gananciaRealCobrada || 0).toFixed(2),
       Number(r.ingresoPorCobrar || 0).toFixed(2),
+      Number(r.costoPorCobrar || 0).toFixed(2),
+      Number(r.gananciaRealPorCobrar || 0).toFixed(2),
       Number(r.ventaTotal || 0).toFixed(2),
-      Number(r.costoEstimado || 0).toFixed(2),
-      Number(r.utilidadCobrada || 0).toFixed(2),
-      Number(r.utilidadTotal || 0).toFixed(2)
+      Number(r.costoTotal || 0).toFixed(2),
+      Number(r.gananciaRealTotal || 0).toFixed(2)
     ]);
     descargarCSV([head, ...rows], `resumen_diario_${fechaDesdeSel()}_${fechaHastaSel()}.csv`);
   }
 
   function exportCSVDetalle(){
     const head = [
-      "Fecha","Producto","Precio venta kg eq","Precio compra kg eq","Ganancia por kg","Cobrado kg","Por cobrar kg",
-      "Neto kg","Ingreso cobrado","Ingreso por cobrar","Venta total","Costo estimado","Utilidad estimada"
+      "Fecha","Producto","Precio venta kg eq","Precio compra kg eq","Ganancia por kg",
+      "Cobrado kg","Por cobrar kg","Neto kg",
+      "Ingreso cobrado","Costo cobrado","Ganancia real cobrada",
+      "Ingreso por cobrar","Costo por cobrar","Ganancia real por cobrar",
+      "Venta total","Costo total","Ganancia real total"
     ];
     const rows = detalleDiaProductoRows.map(r=>[
       r.fecha,
@@ -1588,10 +1668,14 @@
       Number(r.porCobrarKg || 0).toFixed(2),
       Number(r.netoKg || 0).toFixed(2),
       Number(r.ingresoCobrado || 0).toFixed(2),
+      Number(r.costoCobrado || 0).toFixed(2),
+      Number(r.gananciaRealCobrada || 0).toFixed(2),
       Number(r.ingresoPorCobrar || 0).toFixed(2),
+      Number(r.costoPorCobrar || 0).toFixed(2),
+      Number(r.gananciaRealPorCobrar || 0).toFixed(2),
       Number(r.ventaTotal || 0).toFixed(2),
-      Number(r.costoEstimado || 0).toFixed(2),
-      Number(r.utilidadEstimada || 0).toFixed(2)
+      Number(r.costoTotal || 0).toFixed(2),
+      Number(r.gananciaRealTotal || 0).toFixed(2)
     ]);
     descargarCSV([head, ...rows], `detalle_dia_producto_${fechaDesdeSel()}_${fechaHastaSel()}.csv`);
   }
