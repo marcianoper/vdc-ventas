@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Total de Ventas — VDC 360°</title>
+  <title>Total de Ventas por Rango — VDC 360°</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
@@ -32,14 +32,14 @@
         var(--bg);
     }
 
-    .wrap{ max-width:1440px; margin:0 auto; padding:0 16px; }
+    .wrap{ max-width:1600px; margin:0 auto; padding:0 16px; }
 
     header{
       position:sticky;
       top:0;
       z-index:40;
       backdrop-filter:saturate(140%) blur(10px);
-      background:rgba(246,247,248,.80);
+      background:rgba(246,247,248,.82);
       border-bottom:1px solid rgba(229,231,235,.75);
     }
 
@@ -171,21 +171,21 @@
       font-size:12px;
       font-weight:800;
       line-height:1.35;
-      max-width:80ch;
+      max-width:90ch;
     }
 
     .filters{
       display:grid;
-      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      grid-template-columns: repeat(6, minmax(180px, 1fr));
       gap:12px;
       align-items:end;
     }
 
-    @media (max-width:1200px){
+    @media (max-width:1300px){
       .filters{ grid-template-columns:1fr 1fr 1fr; }
     }
 
-    @media (max-width:900px){
+    @media (max-width:820px){
       .filters{ grid-template-columns:1fr 1fr; }
     }
 
@@ -249,6 +249,11 @@
       box-shadow:0 10px 20px rgba(71,85,105,.18);
     }
 
+    .btn.orange{
+      background:#b45309;
+      box-shadow:0 10px 20px rgba(180,83,9,.18);
+    }
+
     .btnRow{
       display:flex;
       gap:10px;
@@ -257,16 +262,16 @@
 
     .stats{
       display:grid;
-      grid-template-columns: repeat(7, minmax(180px, 1fr));
+      grid-template-columns: repeat(8, minmax(170px, 1fr));
       gap:12px;
     }
 
-    @media (max-width:1400px){
-      .stats{ grid-template-columns: repeat(4, minmax(180px, 1fr)); }
+    @media (max-width:1450px){
+      .stats{ grid-template-columns: repeat(4, minmax(170px, 1fr)); }
     }
 
-    @media (max-width:1100px){
-      .stats{ grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+    @media (max-width:980px){
+      .stats{ grid-template-columns: repeat(2, minmax(170px, 1fr)); }
     }
 
     @media (max-width:620px){
@@ -325,7 +330,7 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:1180px;
+      min-width:1220px;
     }
 
     th, td{
@@ -388,7 +393,7 @@
       font-size:12px;
       font-weight:800;
       color:var(--muted);
-      line-height:1.4;
+      line-height:1.45;
       margin-top:10px;
     }
 
@@ -413,16 +418,16 @@
       <div class="brand">
         <div class="logo">VDC</div>
         <div class="title">
-          <b>Total de Ventas — VDC 360°</b>
-          <span id="subtituloVista">Cobrado + Cuentas por cobrar + Ganancia estimada del día</span>
+          <b>Total de Ventas por Rango — VDC 360°</b>
+          <span id="subtituloVista">Resumen detallado por día, por producto y acumulado del periodo</span>
         </div>
       </div>
 
       <div class="barRight">
         <a class="btnLink" href="https://marcianoper.github.io/vdc-central/">← VDC Central</a>
-        <span id="rtNotas" class="pill">Notas RT: —</span>
-        <span id="rtMostrador" class="pill">Mostrador RT: —</span>
-        <span id="rtCostos" class="pill">Costos por fecha: —</span>
+        <span id="rtNotas" class="pill">Notas: —</span>
+        <span id="rtMostrador" class="pill">Mostrador: —</span>
+        <span id="rtCostos" class="pill">Costos: —</span>
       </div>
     </div>
   </div>
@@ -433,19 +438,21 @@
   <section class="card">
     <div class="cardHead">
       <div>
-        <h2>Filtro del día</h2>
-        <p id="textoFiltroDia">
-          Esta página toma:
-          <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
-          <b>cobrado</b> desde el <b>mostrador neto</b> del día
-          y <b>precio de compra</b> desde el <b>costo final por producto guardado por fecha</b>.
+        <h2>Filtro del periodo</h2>
+        <p>
+          Aquí puedes consultar desde un día hasta varios días. El sistema te mostrará:
+          <b>resumen diario</b>, <b>detalle por producto por día</b> y <b>acumulado total del rango</b>.
         </p>
       </div>
     </div>
 
     <div class="filters">
-      <label>Fecha
-        <input type="date" id="fecha" />
+      <label>Desde
+        <input type="date" id="fechaDesde" />
+      </label>
+
+      <label>Hasta
+        <input type="date" id="fechaHasta" />
       </label>
 
       <label>Vista
@@ -467,55 +474,46 @@
       </label>
 
       <div class="btnRow">
-        <button class="btn" id="btnRecargar">Actualizar</button>
-        <button class="btn dark" id="btnCSV">Exportar CSV</button>
-        <button class="btn gray" id="btnLimpiarPrecios">Limpiar precios del día</button>
+        <button class="btn" id="btnActualizar">Actualizar</button>
+        <button class="btn dark" id="btnCSVResumen">CSV resumen diario</button>
+        <button class="btn gray" id="btnCSVDetalle">CSV detalle por día</button>
+        <button class="btn orange" id="btnLimpiarPrecios">Limpiar precios del rango</button>
       </div>
     </div>
 
-    <div class="note" id="notaExplicativa">
-      Los <b>precios de venta</b> se pueden ajustar por día.
-      Los <b>precios de compra</b> se llenan automáticamente con el <b>costo final por producto</b> guardado para la fecha seleccionada.
-      Si no existe ese dato, cae al comportamiento de respaldo:
-      costo fijo, costo promedio global o precio guardado/default.  
-      <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
-      En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
-      <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
-      de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
+    <div class="note">
+      <b>Importante:</b> este módulo calcula muy bien el detalle <b>por fecha</b> y <b>por producto</b>.
+      Si quieres ver el costo exacto de <b>cada viaje individual</b>, hay que conectarlo también con la
+      tabla de <b>hoja de viaje / viajes</b> o una tabla que guarde costos por viaje.
+      Con lo que hoy tienes conectado, este módulo trabaja a nivel <b>día</b>.
     </div>
   </section>
 
   <section class="card">
     <div class="cardHead">
       <div>
-        <h2>Resumen del día</h2>
-        <p id="textoResumenDia">Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.</p>
+        <h2>Resumen acumulado del rango</h2>
+        <p>Acumulado total del periodo seleccionado.</p>
       </div>
     </div>
 
     <div class="stats">
       <div class="stat">
+        <div class="k">Días analizados</div>
+        <div class="v" id="statDias">0</div>
+        <div class="s">Cantidad de días con datos dentro del rango.</div>
+      </div>
+
+      <div class="stat">
         <div class="k">Cobrado</div>
         <div class="v" id="statCobrado">$0.00</div>
-        <div class="s" id="statCobradoDesc">Mostrador neto del día valuado con precio de venta + Venta Bodega.</div>
+        <div class="s">Mostrador neto + Venta Bodega.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Ganancia cobrada</div>
-        <div class="v" id="statGananciaCobrado">$0.00</div>
-        <div class="s">Utilidad estimada solo del producto ya cobrado.</div>
-      </div>
-
-      <div class="stat">
-        <div class="k">Cuentas por cobrar</div>
+        <div class="k">Por cobrar</div>
         <div class="v" id="statPorCobrar">$0.00</div>
-        <div class="s" id="statPorCobrarDesc">Notas a crédito cerradas del día valuadas con precio de venta.</div>
-      </div>
-
-      <div class="stat">
-        <div class="k">Ganancia por cobrar</div>
-        <div class="v" id="statGananciaPorCobrar">$0.00</div>
-        <div class="s">Utilidad estimada del producto vendido a crédito.</div>
+        <div class="s">Notas cerradas del periodo.</div>
       </div>
 
       <div class="stat">
@@ -527,80 +525,109 @@
       <div class="stat">
         <div class="k">Kilos netos</div>
         <div class="v" id="statKgNetos">0.00 kg</div>
-        <div class="s">Kilos totales del día por producto.</div>
+        <div class="s">Suma de kilos cobrados y por cobrar.</div>
       </div>
 
       <div class="stat">
-        <div class="k">Utilidad estimada total</div>
-        <div class="v" id="statUtilidad">$0.00</div>
-        <div class="s">Suma de utilidad cobrada + utilidad por cobrar.</div>
+        <div class="k">Costo estimado</div>
+        <div class="v" id="statCostoTotal">$0.00</div>
+        <div class="s">Costo estimado total de producto vendido.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Utilidad cobrada</div>
+        <div class="v" id="statUtilidadCobrada">$0.00</div>
+        <div class="s">Utilidad solo de lo ya cobrado.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Utilidad total</div>
+        <div class="v" id="statUtilidadTotal">$0.00</div>
+        <div class="s">Utilidad estimada del periodo completo.</div>
       </div>
     </div>
-  </section>
-
-  <section class="grid2">
-    <section class="card">
-      <div class="cardHead">
-        <div>
-          <h2 id="tituloPorCobrar">Detalle: cuentas por cobrar</h2>
-          <p id="textoPorCobrar">Notas a crédito cerradas del día, agrupadas por producto.</p>
-        </div>
-      </div>
-
-      <div class="tableWrap">
-        <table id="tablaPorCobrar">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Kilos</th>
-              <th>Pzas</th>
-              <th>Precio por kg</th>
-              <th>Importe</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="cardHead">
-        <div>
-          <h2 id="tituloCobrado">Detalle: cobrado</h2>
-          <p id="textoCobrado">Mostrador neto del día + Venta Bodega.</p>
-        </div>
-      </div>
-
-      <div class="tableWrap">
-        <table id="tablaCobrado">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Enviado kg</th>
-              <th>Devuelto kg</th>
-              <th>Cobrado neto kg</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
   </section>
 
   <section class="card">
     <div class="cardHead">
       <div>
-        <h2>Venta del día por producto</h2>
-        <p id="textoMaster">
-          Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
-          <b>ganancia por kg</b>, <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>,
-          <b>venta total</b> y <b>ganancia estimada</b>.
+        <h2>Resumen por día</h2>
+        <p>
+          Aquí ves cada día individualmente:
+          kilos, cobrado, por cobrar, venta total, costo estimado y utilidad.
         </p>
       </div>
     </div>
 
     <div class="tableWrap">
-      <table id="tablaMaster">
+      <table id="tablaResumenDia">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Productos con movimiento</th>
+            <th>Cobrado kg</th>
+            <th>Por cobrar kg</th>
+            <th>Neto kg</th>
+            <th>Ingreso cobrado</th>
+            <th>Ingreso por cobrar</th>
+            <th>Venta total</th>
+            <th>Costo estimado</th>
+            <th>Utilidad cobrada</th>
+            <th>Utilidad total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Detalle por producto y por día</h2>
+        <p>
+          Este es el análisis fino:
+          <b>cada producto en cada día</b>, con precio de venta, costo, kilos, ingresos y utilidad.
+        </p>
+      </div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="tablaDetalleDiaProducto">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Precio venta</th>
+            <th>Precio compra</th>
+            <th>Ganancia por kg</th>
+            <th>Cobrado kg</th>
+            <th>Por cobrar kg</th>
+            <th>Neto kg</th>
+            <th>Ingreso cobrado</th>
+            <th>Ingreso por cobrar</th>
+            <th>Venta total</th>
+            <th>Costo estimado</th>
+            <th>Utilidad estimada</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Acumulado por producto del rango</h2>
+        <p>
+          Aquí se suma todo el periodo seleccionado por producto.
+        </p>
+      </div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="tablaAcumuladoProducto">
         <thead>
           <tr>
             <th>Producto</th>
@@ -613,7 +640,8 @@
             <th>Ingreso cobrado</th>
             <th>Ingreso por cobrar</th>
             <th>Venta total</th>
-            <th>Ganancia estimada</th>
+            <th>Costo estimado</th>
+            <th>Utilidad estimada</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -622,17 +650,15 @@
 
     <div class="note">
       <b>Ganancia por kg</b> = <b>precio de venta - precio de compra</b>.<br>
-      <span class="good">Ganancia estimada</span> = <b>(precio de venta - precio de compra) × neto kg</b>.<br>
-      <b>Ganancia cobrada</b> = <b>(precio de venta - precio de compra) × cobrado kg</b>.<br>
-      <b>Ganancia por cobrar</b> = <b>(precio de venta - precio de compra) × por cobrar kg</b>.<br>
-      En las <b>notas a crédito</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto para
-      <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, que se valúan por <b>piezas</b>.
+      <b>Costo estimado</b> = <b>neto kg × precio compra</b>.<br>
+      <b>Utilidad estimada</b> = <b>venta total - costo estimado</b>.<br>
+      En <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, el ingreso de notas se calcula por <b>piezas</b>.
     </div>
   </section>
 
 </main>
 
-<footer>VDC 360° · Total de ventas del día · Marciano mode ✅</footer>
+<footer>VDC 360° · Resumen por rango · Marciano mode ✅</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -792,7 +818,7 @@
     "Cuajo": ["cuajo", "quajo"],
     "Sebo": ["sebo"],
     "Higado": ["higado", "hígado"],
-    "Hueso": ["hueso", "Hueso"],
+    "Hueso": ["hueso"],
     "Lengua": ["lengua", "lenguas"],
     "Libro": ["libro"],
     "Menudo Sucio": ["menudo sucio"],
@@ -808,25 +834,17 @@
     "Sebo2": ["sebo2"]
   };
 
-  let notasChannel = null;
-  let notasDetalleChannel = null;
-  let mostradorEnvChannel = null;
-  let mostradorDevChannel = null;
-  let costosPromedioChannel = null;
-  let costosFinalesChannel = null;
-
   let notasCerradas = [];
   let notasDetalle = [];
   let mostradorEnviados = [];
   let mostradorDevueltos = [];
+  let costosPromedioRows = [];
+  let costosFinalesRows = [];
 
-  let preciosDia = {};
-  let costosAutoDia = {};
-  let costosFinalesPorProducto = {};
-  let tablaMasterRows = [];
-  let tablaPorCobrarRows = [];
-  let tablaCobradoRows = [];
-  let costoPromedioFechaSeleccionada = 0;
+  let preciosRango = {};
+  let resumenPorDiaRows = [];
+  let detalleDiaProductoRows = [];
+  let acumuladoProductoRows = [];
 
   const $ = (s)=>document.querySelector(s);
 
@@ -875,16 +893,29 @@
     return Number.isFinite(n) ? n : 0;
   }
 
-  function storageKey(){
-    return `vdc_total_ventas_precios_${fechaSel()}_${modoVistaSel()}`;
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
 
-  function fechaSel(){
-    return $("#fecha").value || todayISO();
+  function fechaDesdeSel(){
+    return $("#fechaDesde").value || todayISO();
+  }
+
+  function fechaHastaSel(){
+    return $("#fechaHasta").value || todayISO();
   }
 
   function modoVistaSel(){
-    return $("#modoVista")?.value || "vdc";
+    return $("#modoVista").value || "vdc";
+  }
+
+  function storageKey(){
+    return `vdc_total_ventas_rango_${fechaDesdeSel()}_${fechaHastaSel()}_${modoVistaSel()}`;
   }
 
   function setRtPill(id, text, type){
@@ -904,6 +935,96 @@
       }
     }
     return null;
+  }
+
+  function getDefaultVenta(producto){
+    return num(PRECIOS_VENTA_DEFAULT[producto] || 0);
+  }
+
+  function getDefaultCompra(producto){
+    return num(PRECIOS_COMPRA_DEFAULT[producto] || 0);
+  }
+
+  function buildDefaultPreciosRango(){
+    const obj = {};
+    for(const producto of PRODUCTOS_ORDEN){
+      obj[producto] = {
+        venta: getDefaultVenta(producto),
+        compra: getDefaultCompra(producto)
+      };
+    }
+    return obj;
+  }
+
+  function mergeWithDefaults(saved){
+    const base = buildDefaultPreciosRango();
+    const src = (saved && typeof saved === "object") ? saved : {};
+    for(const producto of PRODUCTOS_ORDEN){
+      const row = src[producto] || {};
+      if(row.venta != null && row.venta !== "") base[producto].venta = num(row.venta);
+      if(row.compra != null && row.compra !== "") base[producto].compra = num(row.compra);
+    }
+    return base;
+  }
+
+  function loadPreciosRango(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(storageKey()) || "null");
+      preciosRango = mergeWithDefaults(saved);
+    }catch{
+      preciosRango = buildDefaultPreciosRango();
+    }
+    savePreciosRango();
+  }
+
+  function savePreciosRango(){
+    localStorage.setItem(storageKey(), JSON.stringify(preciosRango));
+  }
+
+  function getPrecioVentaGuardado(producto){
+    return num(preciosRango[producto]?.venta ?? getDefaultVenta(producto));
+  }
+
+  function getPrecioCompraGuardado(producto){
+    return num(preciosRango[producto]?.compra ?? getDefaultCompra(producto));
+  }
+
+  function getPrecioVentaBase(producto){
+    return getDefaultVenta(producto);
+  }
+
+  function setPrecio(producto, campo, valor){
+    if(!preciosRango[producto]){
+      preciosRango[producto] = {
+        venta: getDefaultVenta(producto),
+        compra: getDefaultCompra(producto)
+      };
+    }
+    preciosRango[producto][campo] = num(valor);
+    savePreciosRango();
+    procesarTodo();
+  }
+
+  function esCaja(producto){
+    return norm(producto).includes("caja");
+  }
+
+  function esProductoPrecioPorCaja(producto){
+    return PRODUCTOS_PRECIO_POR_CAJA.has(producto);
+  }
+
+  function calcularImportePorProducto(producto, kilos, piezas, precioVenta){
+    if(esProductoPrecioPorCaja(producto)){
+      return num(piezas) * num(precioVenta);
+    }
+    return num(kilos) * num(precioVenta);
+  }
+
+  function puedeUsarCostoPromedioGlobal(producto){
+    if(PRECIOS_COMPRA_FIJOS[producto] != null) return false;
+    if(esCaja(producto)) return false;
+    if(PRODUCTOS_EXCLUIDOS_COSTO_AUTO.has(producto)) return false;
+    return true;
   }
 
   function esCarniceria(nombreCliente){
@@ -927,277 +1048,70 @@
     return !esCarniceria(nombre) && !esVentaBodega(nombre);
   }
 
-  function getDefaultVenta(producto){
-    return num(PRECIOS_VENTA_DEFAULT[producto] || 0);
-  }
-
-  function getDefaultCompra(producto){
-    return num(PRECIOS_COMPRA_DEFAULT[producto] || 0);
-  }
-
-  function buildDefaultPreciosDia(){
-    const obj = {};
-    for(const producto of PRODUCTOS_ORDEN){
-      obj[producto] = {
-        venta: getDefaultVenta(producto),
-        compra: getDefaultCompra(producto)
-      };
+  function getFechasDelRango(desde, hasta){
+    const out = [];
+    const d1 = new Date(desde + "T00:00:00");
+    const d2 = new Date(hasta + "T00:00:00");
+    if(d1 > d2) return out;
+    const cur = new Date(d1);
+    while(cur <= d2){
+      out.push(cur.toISOString().slice(0,10));
+      cur.setDate(cur.getDate() + 1);
     }
-    return obj;
+    return out;
   }
 
-  function mergeWithDefaults(saved){
-    const base = buildDefaultPreciosDia();
-    const src = (saved && typeof saved === "object") ? saved : {};
-    for(const producto of PRODUCTOS_ORDEN){
-      const row = src[producto] || {};
-      if(row.venta != null && row.venta !== "") base[producto].venta = num(row.venta);
-      if(row.compra != null && row.compra !== "") base[producto].compra = num(row.compra);
-    }
-    return base;
-  }
-
-  function loadPreciosDia(){
-    try{
-      const saved = JSON.parse(localStorage.getItem(storageKey()) || "null");
-      preciosDia = mergeWithDefaults(saved);
-    }catch{
-      preciosDia = buildDefaultPreciosDia();
-    }
-    savePreciosDia();
-  }
-
-  function savePreciosDia(){
-    localStorage.setItem(storageKey(), JSON.stringify(preciosDia));
-  }
-
-  function getPrecioVentaGuardado(producto){
-    return num(preciosDia[producto]?.venta ?? getDefaultVenta(producto));
-  }
-
-  function getPrecioCompraGuardado(producto){
-    return num(preciosDia[producto]?.compra ?? getDefaultCompra(producto));
-  }
-
-  function getPrecioVentaBase(producto){
-    return getDefaultVenta(producto);
-  }
-
-  function setPrecio(producto, campo, valor){
-    if(!preciosDia[producto]){
-      preciosDia[producto] = {
-        venta: getDefaultVenta(producto),
-        compra: getDefaultCompra(producto)
-      };
-    }
-    preciosDia[producto][campo] = num(valor);
-    savePreciosDia();
-    procesarTodo();
-  }
-
-  function escapeHtml(str){
-    return String(str ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function esCaja(producto){
-    return norm(producto).includes("caja");
-  }
-
-  function esProductoPrecioPorCaja(producto){
-    return PRODUCTOS_PRECIO_POR_CAJA.has(producto);
-  }
-
-  function getPrecioUnitarioVisual(producto, precioVentaReal){
-    if(esProductoPrecioPorCaja(producto)){
-      return KG_POR_CAJA_COMPLETA > 0 ? (precioVentaReal / KG_POR_CAJA_COMPLETA) : 0;
-    }
-    return precioVentaReal;
-  }
-
-  function calcularImportePorProducto(producto, kilos, piezas, precioVenta){
-    if(esProductoPrecioPorCaja(producto)){
-      return num(piezas) * num(precioVenta);
-    }
-    return num(kilos) * num(precioVenta);
-  }
-
-  function puedeUsarCostoPromedioGlobal(producto){
-    if(PRECIOS_COMPRA_FIJOS[producto] != null) return false;
-    if(esCaja(producto)) return false;
-    if(PRODUCTOS_EXCLUIDOS_COSTO_AUTO.has(producto)) return false;
-    return true;
-  }
-
-  function actualizarTextosVista(){
-    const vista = modoVistaSel();
-
-    if(vista === "carniceria"){
-      $("#subtituloVista").textContent = "Vista Carnicería VDC — solo notas cerradas del cliente Carnicería";
-      $("#textoFiltroDia").innerHTML = `
-        Esta vista toma <b>únicamente</b> las <b>notas a crédito cerradas</b> del día del cliente <b>Carnicería</b>.
-        No mezcla mostrador, no mezcla Venta Bodega y no mezcla otros clientes.
-      `;
-      $("#notaExplicativa").innerHTML = `
-        En <b>Carnicería VDC</b>, la columna de <b>por cobrar</b> representa los kilos y el importe de las
-        <b>notas cerradas del cliente Carnicería</b>. La parte de <b>cobrado</b> queda en cero para no mezclar esta vista con mostrador.
-        El <b>precio de compra</b> intenta llenar desde <b>costos finales por producto</b> de la fecha seleccionada.
-      `;
-      $("#textoResumenDia").textContent = "Resumen aislado de Carnicería VDC con base en notas cerradas del día.";
-      $("#statCobradoDesc").textContent = "En esta vista el cobrado se mantiene en cero para no mezclar con mostrador.";
-      $("#statPorCobrarDesc").textContent = "Notas cerradas del cliente Carnicería valuadas con precio de venta.";
-      $("#tituloPorCobrar").textContent = "Detalle: Carnicería VDC";
-      $("#textoPorCobrar").textContent = "Notas a crédito cerradas del cliente Carnicería, agrupadas por producto.";
-      $("#tituloCobrado").textContent = "Detalle: cobrado";
-      $("#textoCobrado").textContent = "Sin mezcla de mostrador en esta vista.";
-      $("#textoMaster").innerHTML = `
-        Aquí ves el detalle por producto para <b>Carnicería VDC</b>:
-        <b>precio de venta</b>, <b>precio de compra</b>,
-        <b>ganancia por kg</b>, <b>por cobrar</b>, <b>neto</b>,
-        <b>venta total</b> y <b>ganancia estimada</b>.
-      `;
-    } else {
-      $("#subtituloVista").textContent = "Cobrado + Cuentas por cobrar + Ganancia estimada del día";
-      $("#textoFiltroDia").innerHTML = `
-        Esta página toma:
-        <b>por cobrar</b> desde <b>notas a crédito cerradas</b> del día,
-        <b>cobrado</b> desde el <b>mostrador neto</b> del día
-        y <b>precio de compra</b> desde el <b>costo final por producto guardado por fecha</b>.
-      `;
-      $("#notaExplicativa").innerHTML = `
-        Los <b>precios de venta</b> se pueden ajustar por día.
-        Los <b>precios de compra</b> se llenan automáticamente con el <b>costo final por producto</b> guardado para la fecha seleccionada.
-        Si no existe ese dato, cae al comportamiento de respaldo:
-        costo fijo, costo promedio global o precio guardado/default.  
-        <b>Tripa de Rastro</b> usa compra fija de <b>$45</b> y <b>Cabeza De Rastro</b> usa compra fija de <b>$46</b>.
-        En <b>cuentas por cobrar</b>, el importe se calcula como <b>kilos × precio de venta</b>, excepto en
-        <b>Caja Menudo Canadian</b> y <b>Caja Menudo National</b>, donde el precio <b>$2,900</b> es por caja completa
-        de <b>27.22 kg</b> y el importe se calcula por <b>piezas</b>.
-      `;
-      $("#textoResumenDia").textContent = "Vista rápida de lo cobrado, lo que quedó por cobrar, venta total y utilidad estimada.";
-      $("#statCobradoDesc").textContent = "Mostrador neto del día valuado con precio de venta + Venta Bodega.";
-      $("#statPorCobrarDesc").textContent = "Notas a crédito cerradas del día de clientes normales valuadas con precio de venta.";
-      $("#tituloPorCobrar").textContent = "Detalle: cuentas por cobrar";
-      $("#textoPorCobrar").textContent = "Notas a crédito cerradas del día, agrupadas por producto.";
-      $("#tituloCobrado").textContent = "Detalle: cobrado";
-      $("#textoCobrado").textContent = "Mostrador neto del día + Venta Bodega.";
-      $("#textoMaster").innerHTML = `
-        Aquí ves todo junto: <b>precio de venta</b>, <b>precio de compra</b>,
-        <b>ganancia por kg</b>, <b>cobrado</b>, <b>por cobrar</b>, <b>neto</b>,
-        <b>venta total</b> y <b>ganancia estimada</b>.
-      `;
-    }
-  }
-
-  async function cargarCostoPromedioFecha(){
-    const fecha = fechaSel();
-
-    const { data, error } = await sbResumen
-      .from(COSTOS_PROMEDIO_TABLE)
-      .select("fecha, costo_promedio_kg, total_cost, total_kg")
-      .eq("fecha", fecha)
-      .limit(1);
-
-    if(error){
-      console.error("Error costos_promedio_por_fecha:", error);
-      costoPromedioFechaSeleccionada = 0;
-      costosAutoDia = {};
-      setRtPill("rtCostos", "Costos por fecha: error", "bad");
-      return;
-    }
-
-    const row = Array.isArray(data) && data.length ? data[0] : null;
-    costoPromedioFechaSeleccionada = num(row?.costo_promedio_kg || 0);
-
-    costosAutoDia = {};
-    for(const producto of PRODUCTOS_ORDEN){
-      if(puedeUsarCostoPromedioGlobal(producto)){
-        costosAutoDia[producto] = costoPromedioFechaSeleccionada;
-      }
-    }
-  }
-
-  async function cargarCostosFinalesFecha(){
-    const fecha = fechaSel();
-
-    const { data, error } = await sbResumen
-      .from(COSTOS_FINALES_TABLE)
-      .select("fecha, producto, costo_final, costo_operativo, precio_base, kg")
-      .eq("fecha", fecha);
-
-    if(error){
-      console.error("Error costos_finales_por_producto:", error);
-      costosFinalesPorProducto = {};
-      if(costoPromedioFechaSeleccionada > 0){
-        setRtPill("rtCostos", `Costos por fecha: prom ${costoPromedioFechaSeleccionada.toFixed(2)}`, "warn");
-      } else {
-        setRtPill("rtCostos", "Costos por fecha: sin dato", "warn");
-      }
-      return;
-    }
-
+  function indexCostosPromedio(){
     const map = {};
-    for(const row of (data || [])){
+    for(const row of costosPromedioRows || []){
+      map[row.fecha] = num(row.costo_promedio_kg);
+    }
+    return map;
+  }
+
+  function indexCostosFinales(){
+    const map = {};
+    for(const row of costosFinalesRows || []){
+      const fecha = row.fecha;
       const prod = canonProducto(row.producto) || row.producto;
-      map[prod] = {
+      if(!map[fecha]) map[fecha] = {};
+      map[fecha][prod] = {
         costo_final: num(row.costo_final),
         costo_operativo: num(row.costo_operativo),
         precio_base: num(row.precio_base),
         kg: num(row.kg)
       };
     }
-    costosFinalesPorProducto = map;
-
-    if(Object.keys(costosFinalesPorProducto).length > 0){
-      setRtPill("rtCostos", `Costos por fecha: ${Object.keys(costosFinalesPorProducto).length} productos`, "ok");
-    } else if(costoPromedioFechaSeleccionada > 0){
-      setRtPill("rtCostos", `Costos por fecha: prom ${costoPromedioFechaSeleccionada.toFixed(2)}`, "warn");
-    } else {
-      setRtPill("rtCostos", "Costos por fecha: sin dato", "warn");
-    }
+    return map;
   }
 
-  function getCostoFinalProducto(producto){
-    const directo = num(costosFinalesPorProducto[producto]?.costo_final || 0);
+  function getCostoFinalProductoPorFecha(producto, fecha, costosFinalesIndex){
+    const porFecha = costosFinalesIndex[fecha] || {};
+    const directo = num(porFecha[producto]?.costo_final || 0);
     if(directo > 0) return directo;
 
-    if(
-      producto === "Cabeza Congelada" ||
-      producto === "Cabeza Sin Lengua"
-    ){
-      const cabezaBase = num(costosFinalesPorProducto["Cabeza"]?.costo_final || 0);
+    if(producto === "Cabeza Congelada" || producto === "Cabeza Sin Lengua"){
+      const cabezaBase = num(porFecha["Cabeza"]?.costo_final || 0);
       if(cabezaBase > 0) return cabezaBase;
     }
 
-    if(
-      producto === "Pata Sucia" ||
-      producto === "Pata Blanca" ||
-      producto === "Pata Morena"
-    ){
-      let pataBase = num(costosFinalesPorProducto["Pata"]?.costo_final || 0);
-
+    if(producto === "Pata Sucia" || producto === "Pata Blanca" || producto === "Pata Morena"){
+      let pataBase = num(porFecha["Pata"]?.costo_final || 0);
       if(pataBase === 0){
         pataBase =
-          num(costosFinalesPorProducto["Pata Blanca"]?.costo_final || 0) ||
-          num(costosFinalesPorProducto["Pata Morena"]?.costo_final || 0) ||
-          num(costosFinalesPorProducto["Pata Sucia"]?.costo_final || 0);
+          num(porFecha["Pata Blanca"]?.costo_final || 0) ||
+          num(porFecha["Pata Morena"]?.costo_final || 0) ||
+          num(porFecha["Pata Sucia"]?.costo_final || 0);
       }
-
       if(pataBase > 0) return pataBase;
     }
 
     return 0;
   }
 
-  function getPrecioCompraFinal(producto){
-    const costoFinalProducto = getCostoFinalProducto(producto);
-    if(costoFinalProducto > 0){
-      return costoFinalProducto;
-    }
+  function getPrecioCompraFinalPorFecha(producto, fecha, costosPromedioIndex, costosFinalesIndex){
+    const costoFinal = getCostoFinalProductoPorFecha(producto, fecha, costosFinalesIndex);
+    if(costoFinal > 0) return costoFinal;
 
     if(PRECIOS_COMPRA_FIJOS[producto] != null){
       return num(PRECIOS_COMPRA_FIJOS[producto]);
@@ -1207,26 +1121,29 @@
       return getPrecioCompraGuardado(producto);
     }
 
-    const auto = num(costosAutoDia[producto] || 0);
-    if(auto > 0) return auto;
+    const costoPromedio = num(costosPromedioIndex[fecha] || 0);
+    if(costoPromedio > 0) return costoPromedio;
 
     return getPrecioCompraGuardado(producto);
   }
 
   async function cargarNotas(){
-    const fecha = fechaSel();
+    const desde = fechaDesdeSel();
+    const hasta = fechaHastaSel();
 
     const { data: notas, error: errNotas } = await sbNotas
       .from("notas_credito")
       .select("id, folio, fecha, estado, total, saldo, cliente_id, created_at, clientes(nombre)")
-      .eq("fecha", fecha)
+      .gte("fecha", desde)
+      .lte("fecha", hasta)
       .eq("estado", "cerrada")
-      .order("created_at", { ascending:false });
+      .order("fecha", { ascending:true });
 
     if(errNotas){
-      console.error("Error notas_credito:", errNotas);
+      console.error(errNotas);
       notasCerradas = [];
       notasDetalle = [];
+      setRtPill("rtNotas", "Notas: error", "bad");
       return;
     }
 
@@ -1235,36 +1152,41 @@
 
     if(!ids.length){
       notasDetalle = [];
+      setRtPill("rtNotas", "Notas: sin datos", "warn");
       return;
     }
 
     const { data: detalle, error: errDet } = await sbNotas
       .from("notas_detalle")
       .select("id, nota_id, producto, cantidad, piezas, precio, importe, created_at")
-      .in("nota_id", ids)
-      .order("created_at", { ascending:false });
+      .in("nota_id", ids);
 
     if(errDet){
-      console.error("Error notas_detalle:", errDet);
+      console.error(errDet);
       notasDetalle = [];
+      setRtPill("rtNotas", "Notas: detalle error", "bad");
       return;
     }
 
     notasDetalle = detalle || [];
+    setRtPill("rtNotas", `Notas: ${notasCerradas.length}`, "ok");
   }
 
   async function cargarMostrador(){
-    const fecha = fechaSel();
+    const desde = fechaDesdeSel();
+    const hasta = fechaHastaSel();
 
     const { data: env, error: errEnv } = await sbMostrador
       .from("mostrador_enviados")
       .select("id, fecha, producto, kilos, piezas, origen, congelado, created_at")
-      .eq("fecha", fecha)
-      .order("created_at", { ascending:false });
+      .gte("fecha", desde)
+      .lte("fecha", hasta)
+      .order("fecha", { ascending:true });
 
     if(errEnv){
-      console.error("Error mostrador_enviados:", errEnv);
+      console.error(errEnv);
       mostradorEnviados = [];
+      setRtPill("rtMostrador", "Mostrador: error", "bad");
     }else{
       mostradorEnviados = env || [];
     }
@@ -1272,501 +1194,399 @@
     const { data: dev, error: errDev } = await sbMostrador
       .from("mostrador_devueltos")
       .select("id, fecha, producto, kilos, created_at")
-      .eq("fecha", fecha)
-      .order("created_at", { ascending:false });
+      .gte("fecha", desde)
+      .lte("fecha", hasta)
+      .order("fecha", { ascending:true });
 
     if(errDev){
-      console.error("Error mostrador_devueltos:", errDev);
+      console.error(errDev);
       mostradorDevueltos = [];
+      setRtPill("rtMostrador", "Mostrador: error", "bad");
     }else{
       mostradorDevueltos = dev || [];
+      setRtPill("rtMostrador", `Mostrador: ${mostradorEnviados.length + mostradorDevueltos.length}`, "ok");
     }
   }
 
-  async function conectarRealtimeNotas(){
-    if(notasChannel){
-      try{ await sbNotas.removeChannel(notasChannel); }catch(e){}
-      notasChannel = null;
+  async function cargarCostos(){
+    const desde = fechaDesdeSel();
+    const hasta = fechaHastaSel();
+
+    const { data: prom, error: errProm } = await sbResumen
+      .from(COSTOS_PROMEDIO_TABLE)
+      .select("fecha, costo_promedio_kg, total_cost, total_kg")
+      .gte("fecha", desde)
+      .lte("fecha", hasta)
+      .order("fecha", { ascending:true });
+
+    const { data: fin, error: errFin } = await sbResumen
+      .from(COSTOS_FINALES_TABLE)
+      .select("fecha, producto, costo_final, costo_operativo, precio_base, kg")
+      .gte("fecha", desde)
+      .lte("fecha", hasta)
+      .order("fecha", { ascending:true });
+
+    if(errProm || errFin){
+      console.error("Error costos:", errProm || errFin);
+      costosPromedioRows = [];
+      costosFinalesRows = [];
+      setRtPill("rtCostos", "Costos: error", "bad");
+      return;
     }
-    if(notasDetalleChannel){
-      try{ await sbNotas.removeChannel(notasDetalleChannel); }catch(e){}
-      notasDetalleChannel = null;
-    }
 
-    const fecha = fechaSel();
-
-    notasChannel = sbNotas
-      .channel(`tv-notas-${fecha}`)
-      .on(
-        "postgres_changes",
-        { event:"*", schema:"public", table:"notas_credito", filter:`fecha=eq.${fecha}` },
-        async ()=>{
-          await cargarNotas();
-          procesarTodo();
-        }
-      )
-      .subscribe((status)=>{
-        if(status === "SUBSCRIBED") setRtPill("rtNotas", "Notas RT: conectado", "ok");
-        else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT") setRtPill("rtNotas", "Notas RT: error", "bad");
-        else setRtPill("rtNotas", "Notas RT: " + status, "warn");
-      });
-
-    notasDetalleChannel = sbNotas
-      .channel(`tv-notas-detalle-${fecha}`)
-      .on(
-        "postgres_changes",
-        { event:"*", schema:"public", table:"notas_detalle" },
-        async ()=>{
-          await cargarNotas();
-          procesarTodo();
-        }
-      )
-      .subscribe();
+    costosPromedioRows = prom || [];
+    costosFinalesRows = fin || [];
+    setRtPill("rtCostos", `Costos: ${costosFinalesRows.length} filas`, "ok");
   }
 
-  async function conectarRealtimeMostrador(){
-    if(mostradorEnvChannel){
-      try{ await sbMostrador.removeChannel(mostradorEnvChannel); }catch(e){}
-      mostradorEnvChannel = null;
-    }
-    if(mostradorDevChannel){
-      try{ await sbMostrador.removeChannel(mostradorDevChannel); }catch(e){}
-      mostradorDevChannel = null;
-    }
-
-    const fecha = fechaSel();
-
-    mostradorEnvChannel = sbMostrador
-      .channel(`tv-mostrador-env-${fecha}`)
-      .on(
-        "postgres_changes",
-        { event:"*", schema:"public", table:"mostrador_enviados", filter:`fecha=eq.${fecha}` },
-        async ()=>{
-          await cargarMostrador();
-          procesarTodo();
-        }
-      )
-      .subscribe((status)=>{
-        if(status === "SUBSCRIBED") setRtPill("rtMostrador", "Mostrador RT: conectado", "ok");
-        else if(status === "CHANNEL_ERROR" || status === "TIMED_OUT") setRtPill("rtMostrador", "Mostrador RT: error", "bad");
-        else setRtPill("rtMostrador", "Mostrador RT: " + status, "warn");
-      });
-
-    mostradorDevChannel = sbMostrador
-      .channel(`tv-mostrador-dev-${fecha}`)
-      .on(
-        "postgres_changes",
-        { event:"*", schema:"public", table:"mostrador_devueltos", filter:`fecha=eq.${fecha}` },
-        async ()=>{
-          await cargarMostrador();
-          procesarTodo();
-        }
-      )
-      .subscribe();
-  }
-
-  async function conectarRealtimeCostos(){
-    if(costosPromedioChannel){
-      try{ await sbResumen.removeChannel(costosPromedioChannel); }catch(e){}
-      costosPromedioChannel = null;
-    }
-    if(costosFinalesChannel){
-      try{ await sbResumen.removeChannel(costosFinalesChannel); }catch(e){}
-      costosFinalesChannel = null;
-    }
-
-    const fecha = fechaSel();
-
-    costosPromedioChannel = sbResumen
-      .channel(`tv-costos-promedio-${fecha}`)
-      .on(
-        "postgres_changes",
-        { event:"*", schema:"public", table:COSTOS_PROMEDIO_TABLE, filter:`fecha=eq.${fecha}` },
-        async ()=>{
-          await cargarCostoPromedioFecha();
-          await cargarCostosFinalesFecha();
-          procesarTodo();
-        }
-      )
-      .subscribe();
-
-    costosFinalesChannel = sbResumen
-      .channel(`tv-costos-finales-${fecha}`)
-      .on(
-        "postgres_changes",
-        { event:"*", schema:"public", table:COSTOS_FINALES_TABLE, filter:`fecha=eq.${fecha}` },
-        async ()=>{
-          await cargarCostosFinalesFecha();
-          procesarTodo();
-        }
-      )
-      .subscribe((status)=>{
-        if(status === "CHANNEL_ERROR" || status === "TIMED_OUT"){
-          setRtPill("rtCostos", "Costos por fecha: error", "bad");
-        }
-      });
-  }
-
-  function procesarNotasPorCobrar(){
-    const map = new Map();
+  function procesarTodo(){
+    const desde = fechaDesdeSel();
+    const hasta = fechaHastaSel();
+    const modo = $("#modoPrecioVenta").value || "preferir_guardado";
     const vista = modoVistaSel();
+    const q = norm($("#buscarProducto").value || "");
 
-    const notasMap = new Map();
-    for(const nota of notasCerradas){
-      notasMap.set(nota.id, nota);
-    }
+    const fechas = getFechasDelRango(desde, hasta);
+    const costosPromedioIndex = indexCostosPromedio();
+    const costosFinalesIndex = indexCostosFinales();
+
+    const notasPorId = new Map();
+    for(const n of notasCerradas) notasPorId.set(n.id, n);
+
+    const detalleNotasPorFechaYProducto = {};
+    const ventaBodegaPorFechaYProducto = {};
+    const enviadoPorFechaYProducto = {};
+    const devueltoPorFechaYProducto = {};
 
     for(const row of notasDetalle){
-      const nota = notasMap.get(row.nota_id);
+      const nota = notasPorId.get(row.nota_id);
       if(!nota) continue;
 
-      if(vista === "vdc"){
-        if(!notaEsClienteNormal(nota)) continue;
-      } else if(vista === "carniceria"){
-        if(!notaEsCarniceria(nota)) continue;
+      const fecha = nota.fecha;
+      const producto = canonProducto(row.producto);
+      if(!producto) continue;
+
+      if(!detalleNotasPorFechaYProducto[fecha]) detalleNotasPorFechaYProducto[fecha] = {};
+      if(!detalleNotasPorFechaYProducto[fecha][producto]){
+        detalleNotasPorFechaYProducto[fecha][producto] = { kilos:0, pzas:0 };
       }
 
-      const prod = canonProducto(row.producto);
-      if(!prod) continue;
-
-      if(!map.has(prod)){
-        map.set(prod, {
-          producto: prod,
-          kilos: 0,
-          pzas: 0,
-          importe: 0
-        });
-      }
-
-      const o = map.get(prod);
-      o.kilos += num(row.cantidad);
-      o.pzas += num(row.piezas);
-    }
-
-    const modo = $("#modoPrecioVenta").value || "preferir_guardado";
-
-    const rows = PRODUCTOS_ORDEN.map(producto=>{
-      const r = map.get(producto) || {
-        producto,
-        kilos:0,
-        pzas:0,
-        importe:0
-      };
-
-      const precioBase = getPrecioVentaBase(producto);
-      const precioGuardado = getPrecioVentaGuardado(producto);
-
-      let precioVenta = 0;
-      if(modo === "preferir_guardado"){
-        precioVenta = precioGuardado > 0 ? precioGuardado : precioBase;
+      if(vista === "carniceria"){
+        if(notaEsCarniceria(nota)){
+          detalleNotasPorFechaYProducto[fecha][producto].kilos += num(row.cantidad);
+          detalleNotasPorFechaYProducto[fecha][producto].pzas += num(row.piezas);
+        }
       } else {
-        precioVenta = precioBase > 0 ? precioBase : precioGuardado;
+        if(notaEsClienteNormal(nota)){
+          detalleNotasPorFechaYProducto[fecha][producto].kilos += num(row.cantidad);
+          detalleNotasPorFechaYProducto[fecha][producto].pzas += num(row.piezas);
+        }
+
+        if(notaEsVentaBodega(nota)){
+          if(!ventaBodegaPorFechaYProducto[fecha]) ventaBodegaPorFechaYProducto[fecha] = {};
+          if(!ventaBodegaPorFechaYProducto[fecha][producto]){
+            ventaBodegaPorFechaYProducto[fecha][producto] = { kilos:0 };
+          }
+          ventaBodegaPorFechaYProducto[fecha][producto].kilos += num(row.cantidad);
+        }
       }
-
-      const precioVisual = getPrecioUnitarioVisual(producto, precioVenta);
-      const importeCalculado = calcularImportePorProducto(producto, r.kilos, r.pzas, precioVenta);
-
-      return {
-        producto,
-        kilos:r.kilos,
-        pzas:r.pzas,
-        importe:importeCalculado,
-        precioPromedio:precioVisual,
-        precioVentaReal:precioVenta
-      };
-    });
-
-    tablaPorCobrarRows = rows.filter(r=>r.kilos > 0 || r.importe > 0 || r.pzas > 0);
-    return rows;
-  }
-
-  function procesarCobradoMostrador(){
-    const vista = modoVistaSel();
-
-    if(vista === "carniceria"){
-      const rows = PRODUCTOS_ORDEN.map(producto=>({
-        producto,
-        enviadoKg: 0,
-        devueltoKg: 0,
-        cobradoKg: 0
-      }));
-
-      tablaCobradoRows = rows.filter(r=>r.enviadoKg !== 0 || r.devueltoKg !== 0 || r.cobradoKg !== 0);
-      return rows;
     }
-
-    const enviadosMap = new Map();
-    const devueltosMap = new Map();
 
     for(const row of mostradorEnviados){
-      const prod = canonProducto(row.producto);
-      if(!prod) continue;
-
-      if(!enviadosMap.has(prod)){
-        enviadosMap.set(prod, { producto:prod, enviadoKg:0, devueltoKg:0, cobradoKg:0 });
+      const fecha = row.fecha;
+      const producto = canonProducto(row.producto);
+      if(!producto) continue;
+      if(!enviadoPorFechaYProducto[fecha]) enviadoPorFechaYProducto[fecha] = {};
+      if(!enviadoPorFechaYProducto[fecha][producto]){
+        enviadoPorFechaYProducto[fecha][producto] = { kilos:0 };
       }
-      enviadosMap.get(prod).enviadoKg += num(row.kilos);
+      enviadoPorFechaYProducto[fecha][producto].kilos += num(row.kilos);
     }
 
     for(const row of mostradorDevueltos){
-      const prod = canonProducto(row.producto);
-      if(!prod) continue;
-
-      if(!devueltosMap.has(prod)){
-        devueltosMap.set(prod, { producto:prod, devueltoKg:0 });
+      const fecha = row.fecha;
+      const producto = canonProducto(row.producto);
+      if(!producto) continue;
+      if(!devueltoPorFechaYProducto[fecha]) devueltoPorFechaYProducto[fecha] = {};
+      if(!devueltoPorFechaYProducto[fecha][producto]){
+        devueltoPorFechaYProducto[fecha][producto] = { kilos:0 };
       }
-      devueltosMap.get(prod).devueltoKg += num(row.kilos);
+      devueltoPorFechaYProducto[fecha][producto].kilos += num(row.kilos);
     }
 
-    const notasMap = new Map();
-    for(const nota of notasCerradas){
-      notasMap.set(nota.id, nota);
-    }
+    const detalleRows = [];
+    const acumuladoMap = new Map();
+    const resumenDia = [];
 
-    const ventaBodegaMap = new Map();
+    for(const fecha of fechas){
+      let productosConMovimiento = 0;
+      let totalCobradoKg = 0;
+      let totalPorCobrarKg = 0;
+      let totalIngresoCobrado = 0;
+      let totalIngresoPorCobrar = 0;
+      let totalCosto = 0;
+      let totalUtilidadCobrada = 0;
+      let totalUtilidad = 0;
 
-    for(const row of notasDetalle){
-      const nota = notasMap.get(row.nota_id);
-      if(!nota) continue;
+      for(const producto of PRODUCTOS_ORDEN){
+        const precioBase = getPrecioVentaBase(producto);
+        const precioGuardado = getPrecioVentaGuardado(producto);
+        const precioVenta = modo === "preferir_guardado"
+          ? (precioGuardado > 0 ? precioGuardado : precioBase)
+          : (precioBase > 0 ? precioBase : precioGuardado);
 
-      if(!notaEsVentaBodega(nota)) continue;
+        const precioCompra = getPrecioCompraFinalPorFecha(producto, fecha, costosPromedioIndex, costosFinalesIndex);
+        const gananciaPorKg = precioVenta - precioCompra;
 
-      const prod = canonProducto(row.producto);
-      if(!prod) continue;
+        const notaInfo = detalleNotasPorFechaYProducto[fecha]?.[producto] || { kilos:0, pzas:0 };
+        const enviado = vista === "carniceria" ? 0 : num(enviadoPorFechaYProducto[fecha]?.[producto]?.kilos || 0);
+        const devuelto = vista === "carniceria" ? 0 : num(devueltoPorFechaYProducto[fecha]?.[producto]?.kilos || 0);
+        const ventaBodegaKg = vista === "carniceria" ? 0 : num(ventaBodegaPorFechaYProducto[fecha]?.[producto]?.kilos || 0);
 
-      if(!ventaBodegaMap.has(prod)){
-        ventaBodegaMap.set(prod, { producto:prod, kilos:0 });
+        const cobradoKg = vista === "carniceria" ? 0 : ((enviado - devuelto) + ventaBodegaKg);
+        const porCobrarKg = num(notaInfo.kilos);
+        const porCobrarPzas = num(notaInfo.pzas);
+        const netoKg = cobradoKg + porCobrarKg;
+
+        const ingresoCobrado = esProductoPrecioPorCaja(producto)
+          ? (cobradoKg / KG_POR_CAJA_COMPLETA) * precioVenta
+          : cobradoKg * precioVenta;
+
+        const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVenta);
+        const ventaTotal = ingresoCobrado + ingresoPorCobrar;
+        const costoEstimado = netoKg * precioCompra;
+        const utilidadCobrada = cobradoKg * gananciaPorKg;
+        const utilidadEstimada = ventaTotal - costoEstimado;
+
+        const tuvoMovimiento = Math.abs(cobradoKg) > 0 || Math.abs(porCobrarKg) > 0 || Math.abs(porCobrarPzas) > 0;
+        if(tuvoMovimiento) productosConMovimiento++;
+
+        totalCobradoKg += cobradoKg;
+        totalPorCobrarKg += porCobrarKg;
+        totalIngresoCobrado += ingresoCobrado;
+        totalIngresoPorCobrar += ingresoPorCobrar;
+        totalCosto += costoEstimado;
+        totalUtilidadCobrada += utilidadCobrada;
+        totalUtilidad += utilidadEstimada;
+
+        const det = {
+          fecha,
+          producto,
+          precioVenta,
+          precioCompra,
+          gananciaPorKg,
+          cobradoKg,
+          porCobrarKg,
+          netoKg,
+          ingresoCobrado,
+          ingresoPorCobrar,
+          ventaTotal,
+          costoEstimado,
+          utilidadEstimada
+        };
+
+        detalleRows.push(det);
+
+        if(!acumuladoMap.has(producto)){
+          acumuladoMap.set(producto, {
+            producto,
+            precioVenta,
+            precioCompra,
+            gananciaPorKg,
+            cobradoKg:0,
+            porCobrarKg:0,
+            netoKg:0,
+            ingresoCobrado:0,
+            ingresoPorCobrar:0,
+            ventaTotal:0,
+            costoEstimado:0,
+            utilidadEstimada:0
+          });
+        }
+
+        const acc = acumuladoMap.get(producto);
+        acc.precioVenta = precioVenta;
+        acc.precioCompra = precioCompra;
+        acc.gananciaPorKg = precioVenta - precioCompra;
+        acc.cobradoKg += cobradoKg;
+        acc.porCobrarKg += porCobrarKg;
+        acc.netoKg += netoKg;
+        acc.ingresoCobrado += ingresoCobrado;
+        acc.ingresoPorCobrar += ingresoPorCobrar;
+        acc.ventaTotal += ventaTotal;
+        acc.costoEstimado += costoEstimado;
+        acc.utilidadEstimada += utilidadEstimada;
       }
 
-      ventaBodegaMap.get(prod).kilos += num(row.cantidad);
+      resumenDia.push({
+        fecha,
+        productosConMovimiento,
+        cobradoKg: totalCobradoKg,
+        porCobrarKg: totalPorCobrarKg,
+        netoKg: totalCobradoKg + totalPorCobrarKg,
+        ingresoCobrado: totalIngresoCobrado,
+        ingresoPorCobrar: totalIngresoPorCobrar,
+        ventaTotal: totalIngresoCobrado + totalIngresoPorCobrar,
+        costoEstimado: totalCosto,
+        utilidadCobrada: totalUtilidadCobrada,
+        utilidadTotal: totalUtilidad
+      });
     }
 
-    const rows = PRODUCTOS_ORDEN.map(producto=>{
-      const env = enviadosMap.get(producto)?.enviadoKg || 0;
-      const dev = devueltosMap.get(producto)?.devueltoKg || 0;
-      const vb = ventaBodegaMap.get(producto)?.kilos || 0;
-
-      return {
-        producto,
-        enviadoKg: env,
-        devueltoKg: dev,
-        cobradoKg: (env - dev) + vb
-      };
+    detalleDiaProductoRows = detalleRows.filter(r => {
+      if(q && !norm(r.producto).includes(q)) return false;
+      return Math.abs(r.cobradoKg) > 0 || Math.abs(r.porCobrarKg) > 0 || Math.abs(r.ventaTotal) > 0;
     });
 
-    tablaCobradoRows = rows.filter(r=>r.enviadoKg !== 0 || r.devueltoKg !== 0 || r.cobradoKg !== 0);
-    return rows;
+    resumenPorDiaRows = resumenDia.filter(r =>
+      Math.abs(r.cobradoKg) > 0 ||
+      Math.abs(r.porCobrarKg) > 0 ||
+      Math.abs(r.ventaTotal) > 0
+    );
+
+    acumuladoProductoRows = PRODUCTOS_ORDEN
+      .map(p => acumuladoMap.get(p))
+      .filter(Boolean)
+      .filter(r => {
+        if(q && !norm(r.producto).includes(q)) return false;
+        return Math.abs(r.cobradoKg) > 0 || Math.abs(r.porCobrarKg) > 0 || Math.abs(r.ventaTotal) > 0;
+      });
+
+    renderResumenDia();
+    renderDetalleDiaProducto();
+    renderAcumuladoProducto();
+    renderStats();
   }
 
-  function procesarTablaMaster(){
-    const porCobrar = procesarNotasPorCobrar();
-    const cobrado = procesarCobradoMostrador();
-    const modo = $("#modoPrecioVenta").value || "preferir_guardado";
-
-    const rows = PRODUCTOS_ORDEN.map(producto=>{
-      const rNotas = porCobrar.find(x=>x.producto === producto) || {};
-      const rMost = cobrado.find(x=>x.producto === producto) || {};
-
-      const precioBase = getPrecioVentaBase(producto);
-      const precioVentaGuardado = getPrecioVentaGuardado(producto);
-
-      let precioVenta = 0;
-      if(modo === "preferir_guardado"){
-        precioVenta = precioVentaGuardado > 0 ? precioVentaGuardado : precioBase;
-      } else {
-        precioVenta = precioBase > 0 ? precioBase : precioVentaGuardado;
-      }
-
-      const precioCompra = getPrecioCompraFinal(producto);
-      const gananciaPorKg = precioVenta - precioCompra;
-
-      const cobradoKg = num(rMost.cobradoKg);
-      const porCobrarKg = num(rNotas.kilos);
-      const porCobrarPzas = num(rNotas.pzas);
-      const netoKg = cobradoKg + porCobrarKg;
-
-      const ingresoCobrado = esProductoPrecioPorCaja(producto)
-        ? (cobradoKg / KG_POR_CAJA_COMPLETA) * precioVenta
-        : cobradoKg * precioVenta;
-
-      const ingresoPorCobrar = calcularImportePorProducto(producto, porCobrarKg, porCobrarPzas, precioVenta);
-      const ventaTotal = ingresoCobrado + ingresoPorCobrar;
-
-      const gananciaCobrado = gananciaPorKg * cobradoKg;
-      const gananciaPorCobrar = gananciaPorKg * porCobrarKg;
-      const utilidadEstimada = gananciaCobrado + gananciaPorCobrar;
-
-      return {
-        producto,
-        precioVenta,
-        precioCompra,
-        gananciaPorKg,
-        compraAuto: (getCostoFinalProducto(producto) > 0) || (PRECIOS_COMPRA_FIJOS[producto] != null) || (puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0),
-        cobradoKg,
-        porCobrarKg,
-        porCobrarPzas,
-        netoKg,
-        ingresoCobrado,
-        ingresoPorCobrar,
-        ventaTotal,
-        gananciaCobrado,
-        gananciaPorCobrar,
-        utilidadEstimada
-      };
-    });
-
-    tablaMasterRows = rows;
-    return rows;
-  }
-
-  function renderTablaPorCobrar(){
-    const q = norm($("#buscarProducto").value || "");
-    const tbody = $("#tablaPorCobrar tbody");
-
-    const rows = tablaPorCobrarRows.filter(r=>{
-      if(!q) return true;
-      return norm(r.producto).includes(q);
-    });
-
-    tbody.innerHTML = rows.map(r=>`
+  function renderResumenDia(){
+    const tbody = $("#tablaResumenDia tbody");
+    tbody.innerHTML = resumenPorDiaRows.length ? resumenPorDiaRows.map(r=>`
       <tr>
-        <td>${escapeHtml(r.producto)}</td>
-        <td>${fmtKg(r.kilos)}</td>
-        <td>${fmtNum(r.pzas)}</td>
-        <td>${fmtMoney(r.precioPromedio)}</td>
-        <td>${fmtMoney(r.importe)}</td>
-      </tr>
-    `).join("");
-
-    if(!rows.length){
-      tbody.innerHTML = `<tr><td colspan="5" class="muted">Sin movimientos para esta vista y fecha.</td></tr>`;
-    }
-  }
-
-  function renderTablaCobrado(){
-    const q = norm($("#buscarProducto").value || "");
-    const tbody = $("#tablaCobrado tbody");
-
-    const rows = tablaCobradoRows.filter(r=>{
-      if(!q) return true;
-      return norm(r.producto).includes(q);
-    });
-
-    tbody.innerHTML = rows.map(r=>`
-      <tr>
-        <td>${escapeHtml(r.producto)}</td>
-        <td>${fmtKg(r.enviadoKg)}</td>
-        <td>${fmtKg(r.devueltoKg)}</td>
+        <td>${escapeHtml(r.fecha)}</td>
+        <td>${fmtNum(r.productosConMovimiento)}</td>
         <td>${fmtKg(r.cobradoKg)}</td>
+        <td>${fmtKg(r.porCobrarKg)}</td>
+        <td>${fmtKg(r.netoKg)}</td>
+        <td>${fmtMoney(r.ingresoCobrado)}</td>
+        <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+        <td>${fmtMoney(r.ventaTotal)}</td>
+        <td>${fmtMoney(r.costoEstimado)}</td>
+        <td class="${r.utilidadCobrada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadCobrada)}</td>
+        <td class="${r.utilidadTotal >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadTotal)}</td>
       </tr>
-    `).join("");
-
-    if(!rows.length){
-      tbody.innerHTML = `<tr><td colspan="4" class="muted">Sin movimientos cobrados para esta vista y fecha.</td></tr>`;
-    }
+    `).join("") : `<tr><td colspan="11" class="muted">Sin movimientos en el rango seleccionado.</td></tr>`;
   }
 
-  function renderTablaMaster(){
-    const q = norm($("#buscarProducto").value || "");
-    const tbody = $("#tablaMaster tbody");
+  function renderDetalleDiaProducto(){
+    const tbody = $("#tablaDetalleDiaProducto tbody");
+    tbody.innerHTML = detalleDiaProductoRows.length ? detalleDiaProductoRows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.fecha)}</td>
+        <td>${escapeHtml(r.producto)}</td>
+        <td>${fmtMoney(r.precioVenta)}</td>
+        <td>${fmtMoney(r.precioCompra)}</td>
+        <td class="${r.gananciaPorKg >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaPorKg)}</td>
+        <td>${fmtKg(r.cobradoKg)}</td>
+        <td>${fmtKg(r.porCobrarKg)}</td>
+        <td>${fmtKg(r.netoKg)}</td>
+        <td>${fmtMoney(r.ingresoCobrado)}</td>
+        <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+        <td>${fmtMoney(r.ventaTotal)}</td>
+        <td>${fmtMoney(r.costoEstimado)}</td>
+        <td class="${r.utilidadEstimada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadEstimada)}</td>
+      </tr>
+    `).join("") : `<tr><td colspan="13" class="muted">Sin detalle para mostrar.</td></tr>`;
+  }
 
-    const rows = tablaMasterRows.filter(r=>{
-      if(!q) return true;
-      return norm(r.producto).includes(q);
-    });
-
-    tbody.innerHTML = rows.length ? rows.map(r=>{
-      const utilidadClass = r.utilidadEstimada >= 0 ? "good" : "bad";
-      const margenClass = r.gananciaPorKg >= 0 ? "good" : "bad";
-
-      const compraCell = r.compraAuto
-        ? `<input class="cellReadonly" type="text" value="${Number(r.precioCompra || 0).toFixed(2)}" readonly />`
-        : `<input
+  function renderAcumuladoProducto(){
+    const tbody = $("#tablaAcumuladoProducto tbody");
+    tbody.innerHTML = acumuladoProductoRows.length ? acumuladoProductoRows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.producto)}</td>
+        <td>
+          <input
+            class="cellNum"
+            type="number"
+            step="0.01"
+            value="${Number(r.precioVenta || 0).toFixed(2)}"
+            onchange="setPrecioGlobal('${escapeHtml(r.producto)}','venta', this.value)"
+          />
+        </td>
+        <td>
+          <input
             class="cellNum"
             type="number"
             step="0.01"
             value="${Number(r.precioCompra || 0).toFixed(2)}"
             onchange="setPrecioGlobal('${escapeHtml(r.producto)}','compra', this.value)"
-          />`;
-
-      return `
-        <tr>
-          <td>${escapeHtml(r.producto)}</td>
-          <td>
-            <input
-              class="cellNum"
-              type="number"
-              step="0.01"
-              value="${Number(r.precioVenta || 0).toFixed(2)}"
-              onchange="setPrecioGlobal('${escapeHtml(r.producto)}','venta', this.value)"
-            />
-          </td>
-          <td>${compraCell}</td>
-          <td class="${margenClass}">${fmtMoney(r.gananciaPorKg)}</td>
-          <td>${fmtKg(r.cobradoKg)}</td>
-          <td>${fmtKg(r.porCobrarKg)}</td>
-          <td>${fmtKg(r.netoKg)}</td>
-          <td>${fmtMoney(r.ingresoCobrado)}</td>
-          <td>${fmtMoney(r.ingresoPorCobrar)}</td>
-          <td>${fmtMoney(r.ventaTotal)}</td>
-          <td class="${utilidadClass}">${fmtMoney(r.utilidadEstimada)}</td>
-        </tr>
-      `;
-    }).join("") : `<tr><td colspan="11" class="muted">No hay productos para mostrar con ese filtro.</td></tr>`;
+          />
+        </td>
+        <td class="${r.gananciaPorKg >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaPorKg)}</td>
+        <td>${fmtKg(r.cobradoKg)}</td>
+        <td>${fmtKg(r.porCobrarKg)}</td>
+        <td>${fmtKg(r.netoKg)}</td>
+        <td>${fmtMoney(r.ingresoCobrado)}</td>
+        <td>${fmtMoney(r.ingresoPorCobrar)}</td>
+        <td>${fmtMoney(r.ventaTotal)}</td>
+        <td>${fmtMoney(r.costoEstimado)}</td>
+        <td class="${r.utilidadEstimada >= 0 ? "good" : "bad"}">${fmtMoney(r.utilidadEstimada)}</td>
+      </tr>
+    `).join("") : `<tr><td colspan="12" class="muted">No hay acumulado para mostrar.</td></tr>`;
   }
 
   function renderStats(){
-    const totalCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
-    const totalPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
-    const totalVenta = totalCobrado + totalPorCobrar;
-    const totalKg = tablaMasterRows.reduce((a,b)=>a + num(b.netoKg), 0);
+    const dias = resumenPorDiaRows.length;
+    const cobrado = resumenPorDiaRows.reduce((a,b)=>a + num(b.ingresoCobrado), 0);
+    const porCobrar = resumenPorDiaRows.reduce((a,b)=>a + num(b.ingresoPorCobrar), 0);
+    const ventaTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.ventaTotal), 0);
+    const kgNetos = resumenPorDiaRows.reduce((a,b)=>a + num(b.netoKg), 0);
+    const costoTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.costoEstimado), 0);
+    const utilidadCobrada = resumenPorDiaRows.reduce((a,b)=>a + num(b.utilidadCobrada), 0);
+    const utilidadTotal = resumenPorDiaRows.reduce((a,b)=>a + num(b.utilidadTotal), 0);
 
-    const totalGananciaCobrado = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaCobrado), 0);
-    const totalGananciaPorCobrar = tablaMasterRows.reduce((a,b)=>a + num(b.gananciaPorCobrar), 0);
-    const totalUtilidad = totalGananciaCobrado + totalGananciaPorCobrar;
+    $("#statDias").textContent = fmtNum(dias);
+    $("#statCobrado").textContent = fmtMoney(cobrado);
+    $("#statPorCobrar").textContent = fmtMoney(porCobrar);
+    $("#statVentaTotal").textContent = fmtMoney(ventaTotal);
+    $("#statKgNetos").textContent = `${fmtKg(kgNetos)} kg`;
+    $("#statCostoTotal").textContent = fmtMoney(costoTotal);
+    $("#statUtilidadCobrada").textContent = fmtMoney(utilidadCobrada);
+    $("#statUtilidadTotal").textContent = fmtMoney(utilidadTotal);
 
-    $("#statCobrado").textContent = fmtMoney(totalCobrado);
-    $("#statGananciaCobrado").textContent = fmtMoney(totalGananciaCobrado);
-    $("#statPorCobrar").textContent = fmtMoney(totalPorCobrar);
-    $("#statGananciaPorCobrar").textContent = fmtMoney(totalGananciaPorCobrar);
-    $("#statVentaTotal").textContent = fmtMoney(totalVenta);
-    $("#statKgNetos").textContent = `${fmtKg(totalKg)} kg`;
-    $("#statUtilidad").textContent = fmtMoney(totalUtilidad);
-
-    $("#statGananciaCobrado").classList.remove("good","bad");
-    $("#statGananciaPorCobrar").classList.remove("good","bad");
-    $("#statUtilidad").classList.remove("good","bad");
-
-    $("#statGananciaCobrado").classList.add(totalGananciaCobrado >= 0 ? "good" : "bad");
-    $("#statGananciaPorCobrar").classList.add(totalGananciaPorCobrar >= 0 ? "good" : "bad");
-    $("#statUtilidad").classList.add(totalUtilidad >= 0 ? "good" : "bad");
+    $("#statUtilidadCobrada").classList.remove("good","bad");
+    $("#statUtilidadTotal").classList.remove("good","bad");
+    $("#statUtilidadCobrada").classList.add(utilidadCobrada >= 0 ? "good" : "bad");
+    $("#statUtilidadTotal").classList.add(utilidadTotal >= 0 ? "good" : "bad");
   }
 
-  function procesarTodo(){
-    actualizarTextosVista();
-    procesarTablaMaster();
-    renderTablaPorCobrar();
-    renderTablaCobrado();
-    renderTablaMaster();
-    renderStats();
-  }
-
-  function exportCSV(){
+  function exportCSVResumen(){
     const head = [
-      "Producto",
-      "Precio venta",
-      "Precio compra",
-      "Ganancia por kg",
-      "Cobrado kg",
-      "Por cobrar kg",
-      "Neto kg",
-      "Ingreso cobrado",
-      "Ingreso por cobrar",
-      "Venta total",
-      "Ganancia estimada"
+      "Fecha","Productos con movimiento","Cobrado kg","Por cobrar kg","Neto kg",
+      "Ingreso cobrado","Ingreso por cobrar","Venta total","Costo estimado","Utilidad cobrada","Utilidad total"
     ];
+    const rows = resumenPorDiaRows.map(r=>[
+      r.fecha,
+      r.productosConMovimiento,
+      Number(r.cobradoKg || 0).toFixed(2),
+      Number(r.porCobrarKg || 0).toFixed(2),
+      Number(r.netoKg || 0).toFixed(2),
+      Number(r.ingresoCobrado || 0).toFixed(2),
+      Number(r.ingresoPorCobrar || 0).toFixed(2),
+      Number(r.ventaTotal || 0).toFixed(2),
+      Number(r.costoEstimado || 0).toFixed(2),
+      Number(r.utilidadCobrada || 0).toFixed(2),
+      Number(r.utilidadTotal || 0).toFixed(2)
+    ]);
+    descargarCSV([head, ...rows], `resumen_diario_${fechaDesdeSel()}_${fechaHastaSel()}.csv`);
+  }
 
-    const rows = tablaMasterRows.map(r=>[
+  function exportCSVDetalle(){
+    const head = [
+      "Fecha","Producto","Precio venta","Precio compra","Ganancia por kg","Cobrado kg","Por cobrar kg",
+      "Neto kg","Ingreso cobrado","Ingreso por cobrar","Venta total","Costo estimado","Utilidad estimada"
+    ];
+    const rows = detalleDiaProductoRows.map(r=>[
+      r.fecha,
       r.producto,
       Number(r.precioVenta || 0).toFixed(2),
       Number(r.precioCompra || 0).toFixed(2),
@@ -1777,86 +1597,81 @@
       Number(r.ingresoCobrado || 0).toFixed(2),
       Number(r.ingresoPorCobrar || 0).toFixed(2),
       Number(r.ventaTotal || 0).toFixed(2),
+      Number(r.costoEstimado || 0).toFixed(2),
       Number(r.utilidadEstimada || 0).toFixed(2)
     ]);
+    descargarCSV([head, ...rows], `detalle_dia_producto_${fechaDesdeSel()}_${fechaHastaSel()}.csv`);
+  }
 
-    const csv = [head, ...rows]
-      .map(r => r.map(csvEscape).join(","))
-      .join("\n");
-
+  function descargarCSV(matriz, nombre){
+    const csv = matriz.map(r => r.map(csvEscape).join(",")).join("\n");
     const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `total_ventas_${modoVistaSel()}_${fechaSel()}.csv`;
+    a.download = nombre;
     a.click();
     URL.revokeObjectURL(url);
   }
 
   async function recargarTodo(){
-    loadPreciosDia();
-    await cargarCostoPromedioFecha();
-    await cargarCostosFinalesFecha();
-    await cargarNotas();
-    await cargarMostrador();
+    if(fechaDesdeSel() > fechaHastaSel()){
+      alert("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.");
+      return;
+    }
+
+    loadPreciosRango();
+    await Promise.all([
+      cargarNotas(),
+      cargarMostrador(),
+      cargarCostos()
+    ]);
     procesarTodo();
   }
-
-  async function reiniciarRealtime(){
-    await conectarRealtimeNotas();
-    await conectarRealtimeMostrador();
-    await conectarRealtimeCostos();
-  }
-
-  async function cambiarFecha(){
-    loadPreciosDia();
-    await recargarTodo();
-    await reiniciarRealtime();
-  }
-
-  $("#fecha").addEventListener("change", cambiarFecha);
-  $("#modoVista").addEventListener("change", async ()=>{
-    loadPreciosDia();
-    procesarTodo();
-  });
-  $("#btnRecargar").addEventListener("click", recargarTodo);
-  $("#btnCSV").addEventListener("click", exportCSV);
-  $("#buscarProducto").addEventListener("input", ()=>{
-    renderTablaPorCobrar();
-    renderTablaCobrado();
-    renderTablaMaster();
-  });
-  $("#modoPrecioVenta").addEventListener("change", procesarTodo);
-
-  $("#btnLimpiarPrecios").addEventListener("click", ()=>{
-    if(!confirm("¿Limpiar los precios guardados de esta fecha y esta vista?")) return;
-    localStorage.removeItem(storageKey());
-    loadPreciosDia();
-    procesarTodo();
-  });
 
   window.setPrecioGlobal = function(producto, campo, valor){
-    if(campo === "compra"){
-      if(getCostoFinalProducto(producto) > 0) return;
-      if(PRECIOS_COMPRA_FIJOS[producto] != null) return;
-      if(puedeUsarCostoPromedioGlobal(producto) && num(costosAutoDia[producto] || 0) > 0) return;
-    }
     setPrecio(producto, campo, valor);
   };
 
+  $("#btnActualizar").addEventListener("click", recargarTodo);
+  $("#btnCSVResumen").addEventListener("click", exportCSVResumen);
+  $("#btnCSVDetalle").addEventListener("click", exportCSVDetalle);
+  $("#buscarProducto").addEventListener("input", procesarTodo);
+  $("#modoVista").addEventListener("change", async ()=>{
+    loadPreciosRango();
+    await recargarTodo();
+  });
+  $("#modoPrecioVenta").addEventListener("change", procesarTodo);
+  $("#fechaDesde").addEventListener("change", async ()=>{
+    loadPreciosRango();
+    await recargarTodo();
+  });
+  $("#fechaHasta").addEventListener("change", async ()=>{
+    loadPreciosRango();
+    await recargarTodo();
+  });
+
+  $("#btnLimpiarPrecios").addEventListener("click", ()=>{
+    if(!confirm("¿Limpiar los precios guardados para este rango y esta vista?")) return;
+    localStorage.removeItem(storageKey());
+    loadPreciosRango();
+    procesarTodo();
+  });
+
   window.addEventListener("storage", (e)=>{
     if(e.key === storageKey()){
-      loadPreciosDia();
+      loadPreciosRango();
       procesarTodo();
     }
   });
 
   async function init(){
-    $("#fecha").value = todayISO();
+    const hoy = todayISO();
+    $("#fechaDesde").value = hoy;
+    $("#fechaHasta").value = hoy;
     $("#modoVista").value = "vdc";
-    loadPreciosDia();
+    loadPreciosRango();
     await recargarTodo();
-    await reiniciarRealtime();
   }
 
   init();
