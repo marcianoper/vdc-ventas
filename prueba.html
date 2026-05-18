@@ -417,7 +417,8 @@
         <h2>Filtro del periodo</h2>
         <p>
           Consulta desde un día hasta varios días. El sistema te mostrará:
-          <b>resumen diario</b>, <b>detalle por producto por día</b> y <b>acumulado total del rango</b>.
+          <b>resumen diario</b>, <b>detalle por producto por día</b>, <b>acumulado total del rango</b>,
+          <b>kg de congelado</b> y <b>costos promedio por producto</b>.
         </p>
       </div>
     </div>
@@ -558,6 +559,65 @@
         <div class="v" id="statUtilidadTotal">$0.00</div>
         <div class="s">Margen teórico total.</div>
       </div>
+    </div>
+
+    <div class="stats" style="margin-top:12px">
+      <div class="stat">
+        <div class="k">Kg de congelado</div>
+        <div class="v" id="statKgCongelado">0.00 kg</div>
+        <div class="s">Cajas, Canadian, Canadian x kg, National, National x kg y Washington.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Costo promedio congelado</div>
+        <div class="v" id="statCostoPromCongelado">$0.00</div>
+        <div class="s">Costo total congelado / kg congelado.</div>
+      </div>
+
+      <div class="stat">
+        <div class="k">Costo promedio general</div>
+        <div class="v" id="statCostoPromGeneral">$0.00</div>
+        <div class="s">Costo total del rango / kilos netos.</div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <section class="card">
+    <div class="cardHead">
+      <div>
+        <h2>Kg de congelado y costos promedio</h2>
+        <p>
+          Agrupa todo lo congelado: <b>cajas</b>, <b>Canadian</b>, <b>Canadian x kg</b>,
+          <b>National</b>, <b>National x kg</b> y <b>Washington</b>. También calcula el
+          costo promedio real por producto dentro del rango.
+        </p>
+      </div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="tablaCongeladoCostos">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Cobrado kg</th>
+            <th>Por cobrar kg</th>
+            <th>Neto kg</th>
+            <th>Costo total</th>
+            <th>Costo promedio por kg</th>
+            <th>Venta total</th>
+            <th>Ganancia real total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <b>Costo promedio por kg</b> = costo total / kg netos. Para cajas completas, el sistema mantiene el
+      precio real por caja y lo convierte a kg equivalente con el valor de <b>27.22 kg por caja</b>.
     </div>
   </section>
 
@@ -731,6 +791,15 @@
     "Caja Menudo National"
   ]);
 
+  const PRODUCTOS_CONGELADOS_RESUMEN = new Set([
+    "Caja Menudo Canadian",
+    "Caja Menudo Canadian X KG",
+    "Caja Menudo National",
+    "Caja Menudo National X KG",
+    "Caja Menudo Washington",
+    "Cabeza Congelada"
+  ]);
+
   const PRODUCTOS_EXCLUIDOS_COSTO_AUTO = new Set([
     "Higado","Hueso","PT","Bofe","Sebo","Sebo2","Lengua"
   ]);
@@ -780,6 +849,7 @@
   let resumenPorDiaRows = [];
   let detalleDiaProductoRows = [];
   let acumuladoProductoRows = [];
+  let congeladoCostosRows = [];
 
   const $ = (s)=>document.querySelector(s);
 
@@ -946,6 +1016,17 @@
 
   function esProductoPrecioPorCaja(producto){
     return PRODUCTOS_PRECIO_POR_CAJA.has(producto);
+  }
+
+  function esProductoCongeladoResumen(producto){
+    const n = norm(producto);
+    if(PRODUCTOS_CONGELADOS_RESUMEN.has(producto)) return true;
+    return (
+      n.includes("caja") ||
+      n.includes("canadian") ||
+      n.includes("national") ||
+      n.includes("washington")
+    );
   }
 
   function calcularImportePorProducto(producto, kilos, piezas, precioVenta){
@@ -1473,10 +1554,53 @@
         return Math.abs(r.cobradoKg) > 0 || Math.abs(r.porCobrarKg) > 0 || Math.abs(r.ventaTotal) > 0;
       });
 
+    congeladoCostosRows = acumuladoProductoRows
+      .map(r => ({
+        ...r,
+        tipo: esProductoCongeladoResumen(r.producto) ? "Congelado" : "Costo promedio"
+      }))
+      .filter(r=>{
+        const esCong = esProductoCongeladoResumen(r.producto);
+        const tieneCosto = Math.abs(r.netoKg) > 0 && Math.abs(r.costoTotal) > 0;
+        return esCong || tieneCosto;
+      })
+      .sort((a,b)=>{
+        const ag = esProductoCongeladoResumen(a.producto) ? 0 : 1;
+        const bg = esProductoCongeladoResumen(b.producto) ? 0 : 1;
+        if(ag !== bg) return ag - bg;
+        return Math.abs(b.netoKg) - Math.abs(a.netoKg);
+      });
+
+    renderCongeladoCostos();
     renderResumenDia();
     renderDetalleDiaProducto();
     renderAcumuladoProducto();
     renderStats();
+  }
+
+
+  function renderCongeladoCostos(){
+    const tbody = $("#tablaCongeladoCostos tbody");
+    if(!tbody) return;
+
+    tbody.innerHTML = congeladoCostosRows.length ? congeladoCostosRows.map(r=>{
+      const costoPromKg = Math.abs(num(r.netoKg)) > 0 ? (num(r.costoTotal) / num(r.netoKg)) : 0;
+      const tipoClass = r.tipo === "Congelado" ? "good" : "muted";
+
+      return `
+        <tr>
+          <td>${escapeHtml(r.producto)}</td>
+          <td class="${tipoClass}">${escapeHtml(r.tipo)}</td>
+          <td>${fmtKg(r.cobradoKg)}</td>
+          <td>${fmtKg(r.porCobrarKg)}</td>
+          <td>${fmtKg(r.netoKg)}</td>
+          <td>${fmtMoney(r.costoTotal)}</td>
+          <td>${fmtMoney(costoPromKg)}</td>
+          <td>${fmtMoney(r.ventaTotal)}</td>
+          <td class="${r.gananciaRealTotal >= 0 ? "good" : "bad"}">${fmtMoney(r.gananciaRealTotal)}</td>
+        </tr>
+      `;
+    }).join("") : `<tr><td colspan="9" class="muted">Sin datos de congelado o costos promedio en el rango seleccionado.</td></tr>`;
   }
 
   function renderResumenDia(){
@@ -1607,6 +1731,22 @@
     $("#statGananciaRealTotal").textContent = fmtMoney(gananciaRealTotal);
 
     $("#statKgNetos").textContent = `${fmtKg(kgNetos)} kg`;
+
+    const kgCongelado = acumuladoProductoRows
+      .filter(r => esProductoCongeladoResumen(r.producto))
+      .reduce((a,b)=>a + num(b.netoKg), 0);
+
+    const costoCongelado = acumuladoProductoRows
+      .filter(r => esProductoCongeladoResumen(r.producto))
+      .reduce((a,b)=>a + num(b.costoTotal), 0);
+
+    const costoPromCongelado = kgCongelado > 0 ? costoCongelado / kgCongelado : 0;
+    const costoPromGeneral = kgNetos > 0 ? costoTotal / kgNetos : 0;
+
+    $("#statKgCongelado").textContent = `${fmtKg(kgCongelado)} kg`;
+    $("#statCostoPromCongelado").textContent = fmtMoney(costoPromCongelado);
+    $("#statCostoPromGeneral").textContent = fmtMoney(costoPromGeneral);
+
     $("#statUtilidadCobrada").textContent = fmtMoney(utilidadCobrada);
     $("#statUtilidadPorCobrar").textContent = fmtMoney(utilidadPorCobrar);
     $("#statUtilidadTotal").textContent = fmtMoney(utilidadTotal);
